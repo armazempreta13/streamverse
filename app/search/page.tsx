@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { useSearchParams } from 'next/navigation';
-import { collection, getDocs, query, orderBy, where, or } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where, or } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import { TrendingCard, MediaCard } from '@/components/Cards';
 import { Search as SearchIcon } from 'lucide-react';

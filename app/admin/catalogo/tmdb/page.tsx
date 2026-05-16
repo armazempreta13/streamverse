@@ -5,7 +5,7 @@ import { ArrowLeft, Search, CheckCircle2, Film } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import Image from 'next/image';
 

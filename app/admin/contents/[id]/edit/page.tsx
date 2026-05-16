@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, use } from 'react';
 import { ContentForm } from '../../ContentForm';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 
 export default function EditContentPage({ params }: { params: Promise<{ id: string }> }) {

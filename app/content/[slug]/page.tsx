@@ -9,7 +9,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Navbar } from '@/components/Navbar';
 import clsx from 'clsx';
 import { ContentTabs } from './ContentTabs';
-import { collection, query, where, getDocs, limit, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 

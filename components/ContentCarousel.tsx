@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TrendingCard, MediaCard } from './Cards';
-import { collection, getDocs, orderBy, query, where, limit } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where, limit } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 

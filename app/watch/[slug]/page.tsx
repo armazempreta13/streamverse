@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Play, Pause, AlertCircle, Info, ChevronLeft, Menu, Search, MessageSquare, ListVideo, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useParams, useRouter } from 'next/navigation';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import { useWatchProgress } from '@/hooks/useWatchProgress';
 

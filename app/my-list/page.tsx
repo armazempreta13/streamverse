@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Navbar } from '@/components/Navbar';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import { TrendingCard } from '@/components/Cards';
 import { useAuth } from '@/contexts/AuthContext';

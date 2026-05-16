@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import { ArrowLeft, Plus, Edit2, Trash2, Save, X } from 'lucide-react';
 import Link from 'next/link';

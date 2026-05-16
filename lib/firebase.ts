@@ -1,20 +1,17 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, initializeFirestore } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore/lite';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const isServer = typeof window === 'undefined';
 let app;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
-  if (isServer) {
-    initializeFirestore(app, { experimentalForceLongPolling: true }, firebaseConfig.firestoreDatabaseId);
-  }
 } else {
   app = getApp();
 }
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app);
 
 // Lazy initialization of auth to prevent SSR errors
 let authInstance: any = null;

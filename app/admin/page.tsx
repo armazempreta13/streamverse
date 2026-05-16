@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, getDocs, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, deleteDoc, query, orderBy } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import { Plus, Edit2, Trash2, Video, ListVideo, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
                 onClick={async () => {
                   if (confirm('Atenção: Isso vai excluir TODOS os animes do banco de dados. Tem certeza?')) {
                     try {
-                      const { writeBatch, collection, getDocs, query, where, doc } = await import('firebase/firestore');
+                      const { collection, getDocs, query, where, doc, deleteDoc } = await import('firebase/firestore/lite');
                       const { db } = await import('@/lib/firebase');
                       const q = query(collection(db, 'contents'), where('type', '==', 'anime'));
                       const snapshot = await getDocs(q);
@@ -85,19 +85,10 @@ export default function AdminDashboard() {
                         return;
                       }
                       
-                      const chunks = [];
-                      for (let i = 0; i < snapshot.docs.length; i += 400) {
-                        chunks.push(snapshot.docs.slice(i, i + 400));
-                      }
-                      
                       let count = 0;
-                      for (const chunk of chunks) {
-                        const batch = writeBatch(db);
-                        for (const d of chunk) {
-                          batch.delete(doc(db, 'contents', d.id));
-                          count++;
-                        }
-                        await batch.commit();
+                      for (const d of snapshot.docs) {
+                        await deleteDoc(doc(db, 'contents', d.id));
+                        count++;
                       }
                       
                       alert(`Foram apagados ${count} animes com sucesso! Atualize a página.`);
