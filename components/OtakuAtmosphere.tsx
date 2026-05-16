@@ -16,29 +16,26 @@ export function OtakuAtmosphere() {
           ═══════════════════════════════════════════════ */}
       <div className="absolute inset-0 z-0">
         <div 
-          className="absolute inset-[-30px] bg-cover bg-center bg-no-repeat opacity-[0.12] animate-sceneDrift will-change-transform"
+          className="absolute inset-[-30px] bg-cover bg-center bg-no-repeat opacity-[0.08] animate-sceneDrift will-change-transform mix-blend-screen"
           style={{ 
-            backgroundImage: 'url(/bd.png)',
-            mixBlendMode: 'screen',
+            backgroundImage: 'url(/bd.png)'
           }} 
         />
-        {/* Overlay to replace expensive CSS filters, using normal blend to ensure darkness */}
-        <div className="absolute inset-0 bg-[#050510]/85" />
         {/* Edge fade — melts into darkness at borders */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-transparent to-[#050510]/70" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050510]/60 via-transparent to-[#050510]/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050510]/80 via-transparent to-[#050510]/80" />
       </div>
 
       {/* ═══════════════════════════════════════════════
           LAYER 1 — Cinematic Ambient Glow Orbs
           ═══════════════════════════════════════════════ */}
-      <div className="absolute top-[-10%] right-[-5%] w-[70%] h-[700px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.15)_0%,_rgba(255,51,102,0.02)_40%,_transparent_70%)] mix-blend-screen animate-glowPulse will-change-[opacity,transform]" />
-      <div className="absolute top-[20%] left-[-10%] w-[50%] h-[600px] bg-[radial-gradient(ellipse_at_center,_rgba(143,68,255,0.15)_0%,_rgba(143,68,255,0.02)_40%,_transparent_70%)] mix-blend-screen animate-glowPulse2 will-change-[opacity,transform]" />
-      <div className="absolute bottom-[10%] right-[10%] w-[40%] h-[500px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.1)_0%,_transparent_70%)] mix-blend-screen animate-glowPulse will-change-[opacity,transform]" />
+      <div className="absolute top-[-10%] right-[-5%] w-[70%] h-[700px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.06)_0%,_transparent_60%)] mix-blend-screen animate-glowPulse will-change-[opacity,transform]" />
+      <div className="absolute top-[20%] left-[-10%] w-[50%] h-[600px] bg-[radial-gradient(ellipse_at_center,_rgba(143,68,255,0.05)_0%,_transparent_60%)] mix-blend-screen animate-glowPulse2 will-change-[opacity,transform]" />
+      <div className="absolute bottom-[10%] right-[10%] w-[40%] h-[500px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.04)_0%,_transparent_60%)] mix-blend-screen animate-glowPulse will-change-[opacity,transform]" />
       
       {/* Warm lantern glow — bottom center, like the lanterns in the image */}
-      <div className="absolute bottom-[25%] left-[35%] w-[200px] h-[200px] bg-[radial-gradient(circle,_rgba(255,160,64,0.15)_0%,_rgba(255,128,32,0.05)_40%,_transparent_70%)] animate-lanternGlow will-change-opacity" />
-      <div className="absolute bottom-[30%] left-[55%] w-[150px] h-[150px] bg-[radial-gradient(circle,_rgba(255,160,64,0.1)_0%,_transparent_70%)] animate-lanternGlow2 will-change-opacity" />
+      <div className="absolute bottom-[25%] left-[35%] w-[200px] h-[200px] bg-[radial-gradient(circle,_rgba(255,160,64,0.08)_0%,_transparent_60%)] animate-lanternGlow will-change-opacity" />
+      <div className="absolute bottom-[30%] left-[55%] w-[150px] h-[150px] bg-[radial-gradient(circle,_rgba(255,160,64,0.06)_0%,_transparent_60%)] animate-lanternGlow2 will-change-opacity" />
 
       {/* ═══════════════════════════════════════════════
           LAYER 2 — Subtle Dot Grid Texture
