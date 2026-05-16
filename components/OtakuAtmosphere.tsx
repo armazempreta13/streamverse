@@ -22,8 +22,8 @@ export function OtakuAtmosphere() {
             mixBlendMode: 'screen',
           }} 
         />
-        {/* Overlay to replace expensive CSS filters */}
-        <div className="absolute inset-0 bg-black/60 mix-blend-overlay" />
+        {/* Overlay to replace expensive CSS filters, using normal blend to ensure darkness */}
+        <div className="absolute inset-0 bg-[#050510]/85" />
         {/* Edge fade — melts into darkness at borders */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-transparent to-[#050510]/70" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050510]/60 via-transparent to-[#050510]/60" />
