@@ -53,74 +53,42 @@ export default function Home() {
           <div className="mt-2 space-y-0 relative z-10">
             {siteConfig.features.premiumHomeLayout ? (
               <>
-                {/* 2. Em Alta Agora (Mistura de Tudo) */}
-                <TmdbCarousel 
-                  title="Em Alta Agora" 
-                  endpoint="trending" 
-                  cardStyle="trending" 
-                  seeAllHref="/search?sort=trending"
-                />
-
-                {/* 3. Lançamentos Premium */}
-                <TmdbCarousel 
-                  title="Lançamentos" 
-                  endpoint="recent_movies" 
-                  cardStyle="media" 
-                  seeAllHref="/search?type=movie&sort=recent"
-                  badge="ESTREIA"
-                />
-
+                {/* 2. Em Alta Agora */}
+                <TmdbCarousel title="Em Alta Agora" endpoint="trending" cardStyle="trending" seeAllHref="/search?sort=trending" />
+                {/* 3. Lançamentos */}
+                <TmdbCarousel title="Lançamentos" endpoint="recent_movies" cardStyle="media" seeAllHref="/search?type=movie&sort=recent" badge="ESTREIA" />
                 {/* 4. Séries em Alta */}
                 <div className="relative">
                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[30%] h-full bg-[#8F44FF] rounded-full mix-blend-screen filter blur-[200px] opacity-[0.04] pointer-events-none -z-10" />
-                   <TmdbCarousel 
-                     title="Séries em Alta" 
-                     endpoint="trending_series" 
-                     cardStyle="media" 
-                     seeAllHref="/search?type=tv&sort=trending"
-                     badge="SÉRIE"
-                   />
+                   <TmdbCarousel title="Séries em Alta" endpoint="trending_series" cardStyle="media" seeAllHref="/search?type=tv&sort=trending" badge="SÉRIE" />
                 </div>
-
-                {/* 5. Animes da Temporada (Condicional) */}
+                {/* 5. Animes da Temporada */}
                 {siteConfig.features.showAnimesOnHome && (
                   <div className="relative">
                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[40%] h-full bg-[#3B82F6] rounded-full mix-blend-screen filter blur-[200px] opacity-[0.03] pointer-events-none -z-10" />
-                     <TmdbCarousel 
-                       title="Animes da Temporada" 
-                       endpoint="anime" 
-                       cardStyle="media" 
-                       seeAllHref="/animes"
-                       badge="CRUNCHYROLL"
-                     />
+                     <TmdbCarousel title="Animes da Temporada" endpoint="anime" cardStyle="media" seeAllHref="/animes" badge="ANIME" />
                   </div>
                 )}
-
-                {/* 6. Filmes Mais Assistidos */}
-                <TmdbCarousel 
-                  title="Filmes Mais Assistidos" 
-                  endpoint="popular_movies" 
-                  cardStyle="media" 
-                  seeAllHref="/search?type=movie&sort=popular"
-                />
-
-                {/* 7. Recomendados Para Você (Placeholder Inteligente) */}
-                <TmdbCarousel 
-                  title="Recomendados Para Você" 
-                  endpoint="trending" 
-                  cardStyle="media" 
-                  seeAllHref="/search"
-                  badge="PARA VOCÊ"
-                />
-
+                {/* 6. Filmes Populares */}
+                <TmdbCarousel title="Filmes Mais Assistidos" endpoint="popular_movies" cardStyle="media" seeAllHref="/search?type=movie&sort=popular" />
+                {/* 7. Próximos Lançamentos */}
+                <TmdbCarousel title="Chegando em Breve" endpoint="upcoming_movies" cardStyle="media" seeAllHref="/search?type=movie&sort=upcoming" badge="EM BREVE" />
                 {/* 8. Episódios Novos */}
-                <TmdbCarousel 
-                  title="Episódios Novos" 
-                  endpoint="recent_series"
-                  cardStyle="media" 
-                  seeAllHref="/search?type=tv&sort=recent"
-                  badge="EP NOVO"
-                />
+                <TmdbCarousel title="Episódios Novos" endpoint="recent_series" cardStyle="media" seeAllHref="/search?type=tv&sort=recent" badge="EP NOVO" />
+                {/* 9. Ação */}
+                <TmdbCarousel title="Ação Explosiva 💥" endpoint="action_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=28" />
+                {/* 10. Terror */}
+                <TmdbCarousel title="Terror em Alta 🎃" endpoint="horror_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=27" />
+                {/* 11. Ficção Científica */}
+                <TmdbCarousel title="Ficção Científica 🚀" endpoint="scifi_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=878" />
+                {/* 12. Séries para Maratonar */}
+                <TmdbCarousel title="Séries para Maratonar" endpoint="drama_series" cardStyle="media" seeAllHref="/search?type=tv&genre=18" />
+                {/* 13. Melhores Avaliados */}
+                <TmdbCarousel title="Mais Bem Avaliados ⭐" endpoint="top_rated_movies" cardStyle="trending" seeAllHref="/search?type=movie&sort=top_rated" />
+                {/* 14. Top Animes */}
+                {siteConfig.features.showAnimesOnHome && (
+                  <TmdbCarousel title="Top Animes de Todos os Tempos 🏆" endpoint="top_anime" cardStyle="trending" seeAllHref="/animes" theme="anime" />
+                )}
               </>
             ) : (
               <>

@@ -1,5 +1,5 @@
 import { Navbar } from '@/components/Navbar';
-import { getDetails, getSimilar, formatTmdbToCard, getTmdbImage, getCredits, getKeywords } from '@/lib/tmdb-service';
+import { getDetails, getSimilar, formatTmdbToCard, getTmdbImage, getCredits, getKeywords, getTrailerUrl, getSeasons } from '@/lib/tmdb-service';
 import { Metadata } from 'next';
 import { ArrowLeft, Play, Info, Star, Plus, Download, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -64,6 +64,9 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
 
   const cast = await getCredits(type as 'movie' | 'tv', id);
   const topCast = cast.slice(0, 20);
+
+  const trailerUrl = await getTrailerUrl(type as 'movie' | 'tv', id);
+  const seasons = type === 'tv' ? await getSeasons(id) : [];
 
   // Detecção de Anime: É série/tv, o país de origem inclui Japão (JP) e tem o gênero Animação (id 16)
   const isAnime = type === 'tv' && 
@@ -213,6 +216,62 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
                  </div>
                ))}
              </div>
+          </div>
+        )}
+
+        {/* Trailer Oficial */}
+        {trailerUrl && (
+          <div className="mb-12 pt-8 border-t border-white/5">
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <span className="w-1.5 h-6 rounded-full" style={{ backgroundColor: themeColor, boxShadow: `0 0 10px ${themeColor}` }} />
+              Trailer Oficial
+            </h3>
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/5 shadow-2xl">
+              <iframe
+                src={trailerUrl}
+                title="Trailer"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Temporadas (TV) */}
+        {seasons.length > 0 && (
+          <div className="mb-12 pt-8 border-t border-white/5">
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <span className="w-1.5 h-6 rounded-full" style={{ backgroundColor: themeColor, boxShadow: `0 0 10px ${themeColor}` }} />
+              Temporadas ({seasons.length})
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {seasons.map((s: any) => (
+                <div key={s.id} className="group cursor-pointer">
+                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-[#0A0A16] ring-1 ring-white/5 group-hover:ring-white/20 transition-all mb-2">
+                    {s.posterPath ? (
+                      <Image
+                        src={getTmdbImage(s.posterPath, 'w300')}
+                        alt={s.name}
+                        fill
+                        loading="lazy"
+                        quality={70}
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-white/20 text-4xl font-black">
+                        {s.number}
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                      <span className="text-xs font-bold text-white/70">{s.episodeCount} eps</span>
+                    </div>
+                  </div>
+                  <p className="text-sm font-semibold text-white line-clamp-1">{s.name}</p>
+                  {s.airDate && <p className="text-xs text-white/40 mt-0.5">{new Date(s.airDate).getFullYear()}</p>}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
