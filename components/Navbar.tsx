@@ -179,7 +179,7 @@ export function Navbar() {
                       {suggestions.map((item) => (
                         <Link 
                           key={item.id}
-                          href={item.href}
+                          href={item.href || '#'}
                           onClick={() => setShowSuggestions(false)}
                           className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-colors group"
                         >

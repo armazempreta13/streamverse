@@ -19,6 +19,7 @@ export async function GET(request: Request) {
           const formatted = formatTmdbToCard(item);
           return {
             ...formatted,
+            href: `/tmdb/${formatted.type}/${formatted.id}`,
             source: 'tmdb'
           };
         });
@@ -34,18 +35,30 @@ export async function GET(request: Request) {
       // Fetch popular by type if no query
       if (type === 'movie') {
         const data = await getPopular('movie', page);
-        results = data.map((item: any) => ({ ...formatTmdbToCard({ ...item, media_type: 'movie' }), source: 'tmdb' }));
+        results = data.map((item: any) => {
+          const formatted = formatTmdbToCard({ ...item, media_type: 'movie' });
+          return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb' };
+        });
       } else if (type === 'series' || type === 'tv') {
         const data = await getPopular('tv', page);
-        results = data.map((item: any) => ({ ...formatTmdbToCard({ ...item, media_type: 'tv' }), source: 'tmdb' }));
+        results = data.map((item: any) => {
+          const formatted = formatTmdbToCard({ ...item, media_type: 'tv' });
+          return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb' };
+        });
       } else if (type === 'anime') {
         const data = await getAnime(page);
-        results = data.map((item: any) => ({ ...formatTmdbToCard({ ...item, media_type: 'tv' }), source: 'tmdb' }));
+        results = data.map((item: any) => {
+          const formatted = formatTmdbToCard({ ...item, media_type: 'tv' });
+          return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb' };
+        });
       }
     } else {
       // General trending
       const data = await fetchFromTmdb('/trending/all/day', { page: String(page) });
-      results = (data?.results || []).map((item: any) => ({ ...formatTmdbToCard(item), source: 'tmdb' }));
+      results = (data?.results || []).map((item: any) => {
+        const formatted = formatTmdbToCard(item);
+        return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb' };
+      });
     }
 
     return NextResponse.json({ success: true, results });
