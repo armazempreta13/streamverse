@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { MediaCard } from '@/components/Cards';
-import { SaveWatchProgress } from '@/components/SaveWatchProgress';
+import { VideoPlayer } from '@/components/VideoPlayer';
 
 export default async function TmdbWatchPage({ params }: { params: Promise<{ type: string, id: string }> }) {
   const { type, id } = await params;
@@ -40,8 +40,6 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
   return (
     <div className="min-h-screen bg-[#0A0C10] text-white flex flex-col font-sans">
       <Navbar />
-      <SaveWatchProgress id={id} type={type} title={title} posterUrl={posterUrl} />
-
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 md:px-8 py-8 mt-16 md:mt-20">
         
         {/* Breadcrumb & Title */}
@@ -57,7 +55,7 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
           </div>
           
           <h1 className="text-3xl md:text-4xl font-black mb-4 flex items-center gap-3">
-             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">★</div>
+             <div className="w-8 h-8 bg-[#8F44FF] rounded-full flex items-center justify-center text-white text-sm shadow-[0_0_15px_rgba(143,68,255,0.4)]">★</div>
              {title}
           </h1>
 
@@ -66,14 +64,14 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
             <Link href={`/search?type=${type}`} className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2">
                <ArrowLeft className="size-4" /> Voltar
             </Link>
-            <button className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors pointer-events-none">
+            <button className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors">
                <Plus className="size-5" />
             </button>
-            <button className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors pointer-events-none">
+            <button className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors">
                <Download className="size-5" />
             </button>
             <div className="flex-1" />
-            <button className="bg-transparent hover:bg-white/5 text-[#8A93A6] hover:text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 pointer-events-none">
+            <button className="bg-transparent hover:bg-white/5 text-[#8A93A6] hover:text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
                <Share2 className="size-4" /> Compartilhar
             </button>
           </div>
@@ -83,23 +81,14 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
           
           {/* Main Player Area */}
-          <div className="lg:col-span-8 xl:col-span-9 flex flex-col relative z-[110]">
-            <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/5 relative">
-              <iframe 
-                src={videoUrl}
-                className="w-full h-full border-none"
-                allowFullScreen
-              />
-            </div>
-            
-            {/* Context Actions / Notice under player */}
-            <div className="bg-[#131520] border border-white/5 px-6 py-4 rounded-xl mt-4 flex items-center gap-4">
-              <Info className="size-5 text-[#3D5AFE] shrink-0" />
-              <p className="text-sm text-[#8A93A6]">
-                <strong className="text-white">INFORMAÇÃO:</strong> O player acima é fornecido pelo EmbedMovies. Pode conter anúncios de terceiros sobre os quais não temos controle.
-              </p>
-            </div>
-          </div>
+          <VideoPlayer 
+            id={id} 
+            type={type} 
+            title={title} 
+            posterUrl={posterUrl} 
+            videoUrl={videoUrl} 
+            backdropUrl={backdrop}
+          />
 
           {/* Sidebar Area */}
           <div className="lg:col-span-4 xl:col-span-3 space-y-6">

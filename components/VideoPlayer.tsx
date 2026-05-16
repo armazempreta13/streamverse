@@ -1,0 +1,68 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Play, Info } from 'lucide-react';
+import Image from 'next/image';
+import { SaveWatchProgress } from './SaveWatchProgress';
+
+interface VideoPlayerProps {
+  id: string;
+  type: string;
+  title: string;
+  posterUrl: string;
+  videoUrl: string;
+  backdropUrl?: string;
+}
+
+export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl }: VideoPlayerProps) {
+  const [hasStarted, setHasStarted] = useState(false);
+
+  return (
+    <div className="lg:col-span-8 xl:col-span-9 flex flex-col relative z-[110]">
+      <div className="w-full aspect-video bg-[#050510] rounded-xl overflow-hidden shadow-2xl border border-white/5 relative group">
+        {!hasStarted ? (
+          <div className="absolute inset-0 z-20 flex items-center justify-center">
+            {/* Background Backdrop for player before start */}
+            {backdropUrl && (
+              <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity duration-700">
+                <Image src={backdropUrl} alt={title} fill className="object-cover" unoptimized />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-transparent to-transparent" />
+              </div>
+            )}
+            
+            {/* Play Button Overlay */}
+            <button 
+              onClick={() => setHasStarted(true)}
+              className="relative z-30 w-20 h-20 rounded-full bg-[#8F44FF] flex items-center justify-center text-white shadow-[0_0_50px_rgba(143,68,255,0.6)] hover:scale-110 active:scale-95 transition-all group/btn"
+            >
+              <Play className="size-8 fill-white ml-1 group-hover/btn:scale-110 transition-transform" />
+              <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-ping opacity-20" />
+            </button>
+
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
+               <p className="text-white font-black text-xl tracking-tighter uppercase drop-shadow-lg">Clique para assistir</p>
+               <div className="w-12 h-1 bg-[#8F44FF] rounded-full" />
+            </div>
+          </div>
+        ) : (
+          <>
+            <SaveWatchProgress id={id} type={type} title={title} posterUrl={posterUrl} />
+            <iframe 
+              src={videoUrl}
+              className="w-full h-full border-none relative z-10"
+              allowFullScreen
+            />
+          </>
+        )}
+      </div>
+      
+      {/* Context Actions / Notice under player */}
+      <div className="bg-[#131520] border border-white/5 px-6 py-4 rounded-xl mt-4 flex items-center gap-4">
+        <Info className="size-5 text-[#8F44FF] shrink-0" />
+        <p className="text-sm text-[#8A93A6]">
+          <strong className="text-white">DICA PREMIUM:</strong> Ao iniciar o player, o progresso será salvo automaticamente em seu <span className="text-[#A661FF]">Continuar Assistindo</span>.
+        </p>
+      </div>
+    </div>
+  );
+}

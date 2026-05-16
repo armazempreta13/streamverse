@@ -163,45 +163,56 @@ export function Navbar() {
 
           {/* Search Suggestions Popover */}
           {showSuggestions && (suggestions.length > 0 || isSearching) && (
-            <div className="absolute top-full mt-2 w-80 right-0 bg-[#0A0A16]/95 backdrop-blur-xl border border-white/10 rounded-[20px] shadow-[0_30px_60px_rgba(0,0,0,0.8)] overflow-hidden z-[300] animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="p-2">
+            <div className="absolute top-full mt-3 w-[380px] right-0 bg-[#050510]/95 backdrop-blur-2xl border border-white/10 rounded-[24px] shadow-[0_30px_90px_rgba(0,0,0,0.9)] overflow-hidden z-[300] animate-in fade-in slide-in-from-top-3 duration-500">
+              <div className="p-3">
                 {isSearching && suggestions.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <div className="w-6 h-6 rounded-full border-2 border-[#8F44FF] border-t-transparent animate-spin mx-auto mb-3" />
-                    <p className="text-[12px] text-[#8A93A6]">Buscando...</p>
+                  <div className="p-12 text-center">
+                    <div className="w-8 h-8 rounded-full border-2 border-[#8F44FF] border-t-transparent animate-spin mx-auto mb-4" />
+                    <p className="text-[13px] font-medium text-[#8A93A6]">Explorando o multiverso...</p>
                   </div>
                 ) : (
                   <>
-                    <div className="px-4 py-2 text-[11px] font-bold text-[#8A93A6] uppercase tracking-widest border-b border-white/5 mb-2">
-                      Sugestões
+                    <div className="px-4 py-3 flex items-center justify-between border-b border-white/5 mb-3">
+                      <span className="text-[11px] font-black text-[#5C6370] uppercase tracking-[0.2em]">Sugestões</span>
+                      {isSearching && <div className="w-3 h-3 rounded-full border-2 border-[#8F44FF] border-t-transparent animate-spin" />}
                     </div>
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1.5">
                       {suggestions.map((item) => (
                         <Link 
                           key={item.id}
                           href={item.href || '#'}
                           onClick={() => setShowSuggestions(false)}
-                          className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-colors group"
+                          className="flex items-center gap-4 p-2.5 hover:bg-white/[0.03] rounded-2xl transition-all group relative border border-transparent hover:border-white/5"
                         >
-                          <div className="w-12 h-16 relative rounded-lg overflow-hidden shrink-0 border border-white/5">
+                          <div className="w-[52px] h-[74px] relative rounded-xl overflow-hidden shrink-0 border border-white/10 shadow-lg">
                             <Image 
                               src={item.imageUrl} 
                               alt={item.title} 
                               fill 
-                              className="object-cover group-hover:scale-110 transition-transform duration-500" 
+                              className="object-cover group-hover:scale-110 transition-transform duration-700" 
                               unoptimized
                             />
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-[13px] font-bold text-white truncate group-hover:text-[#A661FF] transition-colors">{item.title}</span>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-[#8A93A6] font-bold uppercase tracking-wider">
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-[14px] font-bold text-white/90 truncate group-hover:text-white transition-colors tracking-tight">{item.title}</span>
+                            <div className="flex items-center gap-2.5 mt-1.5">
+                              <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-[#8A93A6] font-black uppercase tracking-wider border border-white/5">
                                 {item.type === 'movie' ? 'Filme' : 'Série'}
                               </span>
                               {item.score && (
-                                <span className="text-[10px] text-[#A661FF] font-bold">★ {item.score}</span>
+                                <div className="flex items-center gap-1">
+                                  <Star className="size-2.5 text-[#FBBF24] fill-[#FBBF24]" />
+                                  <span className="text-[11px] text-white/60 font-bold tabular-nums">{item.score}</span>
+                                </div>
+                              )}
+                              {item.date && (
+                                <span className="text-[10px] text-[#5C6370] font-medium">{item.date.substring(0,4)}</span>
                               )}
                             </div>
+                          </div>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                             <ChevronDown className="size-4 text-[#8F44FF] rotate-[-90deg]" />
                           </div>
                         </Link>
                       ))}
@@ -211,7 +222,7 @@ export function Navbar() {
                         router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
                         setShowSuggestions(false);
                       }}
-                      className="w-full mt-2 p-3 text-center text-[12px] font-bold text-[#A661FF] hover:bg-[#8F44FF]/10 transition-colors border-t border-white/5"
+                      className="w-full mt-3 p-4 text-center text-[13px] font-black text-white hover:text-[#A661FF] bg-white/[0.02] hover:bg-white/[0.04] transition-all rounded-xl border border-white/5 uppercase tracking-[0.15em]"
                     >
                       Ver todos os resultados
                     </button>
