@@ -109,6 +109,16 @@ export async function getSimilar(type: 'movie' | 'tv', id: string) {
   return data?.results || [];
 }
 
+export async function getCredits(type: 'movie' | 'tv', id: string) {
+  const data = await fetchFromTmdb(`/${type}/${id}/credits`);
+  return data?.cast || [];
+}
+
+export async function getKeywords(type: 'movie' | 'tv', id: string) {
+  const data = await fetchFromTmdb(`/${type}/${id}/keywords`);
+  return data?.keywords || data?.results || [];
+}
+
 export async function fetchLogo(id: number | string, type: 'movie' | 'tv' = 'movie') {
   try {
     const data = await fetchFromTmdb(`/${type}/${id}/images`, { include_image_language: 'en,pt,null' }, true);

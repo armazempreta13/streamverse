@@ -1,11 +1,35 @@
 import { Navbar } from '@/components/Navbar';
-import { getDetails, getSimilar, formatTmdbToCard, getTmdbImage } from '@/lib/tmdb-service';
+import { getDetails, getSimilar, formatTmdbToCard, getTmdbImage, getCredits, getKeywords } from '@/lib/tmdb-service';
+import { Metadata } from 'next';
 import { ArrowLeft, Play, Info, Star, Plus, Download, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { MediaCard } from '@/components/Cards';
 import { VideoPlayer } from '@/components/VideoPlayer';
+
+export async function generateMetadata({ params }: { params: Promise<{ type: string, id: string }> }): Promise<Metadata> {
+  const { type, id } = await params;
+  if (type !== 'movie' && type !== 'tv') return {};
+  
+  const details = await getDetails(type as 'movie' | 'tv', id);
+  if (!details) return {};
+
+  const title = type === 'movie' ? details.title : details.name;
+  const keywordsData = await getKeywords(type as 'movie' | 'tv', id);
+  const tags = keywordsData.map((k: any) => k.name).join(', ');
+
+  return {
+    title: `${title} - Assistir Online no StreamVerse`,
+    description: details.overview ? details.overview.substring(0, 160) : `Assista ${title} online em HD no StreamVerse.`,
+    keywords: `${tags}, assistir ${title}, ${title} online, streamverse`,
+    openGraph: {
+      title: `${title} - StreamVerse`,
+      description: details.overview,
+      images: [details.backdrop_path ? `https://image.tmdb.org/t/p/w780${details.backdrop_path}` : ''],
+    }
+  };
+}
 
 export default async function TmdbWatchPage({ params }: { params: Promise<{ type: string, id: string }> }) {
   const { type, id } = await params;
@@ -36,6 +60,9 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
 
   const similarData = await getSimilar(type as 'movie' | 'tv', id);
   const similarItems = similarData.slice(0, 10).map((item: any) => formatTmdbToCard({ ...item, media_type: type }));
+
+  const cast = await getCredits(type as 'movie' | 'tv', id);
+  const topCast = cast.slice(0, 20);
 
   return (
     <div className="min-h-screen bg-[#0A0C10] text-white flex flex-col font-sans">
@@ -153,6 +180,36 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
             </div>
           </div>
         </div>
+
+        {/* Elenco Principal */}
+        {topCast.length > 0 && (
+          <div className="mb-12 pt-8 border-t border-white/5">
+             <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+               <span className="w-1.5 h-6 bg-[#8F44FF] rounded-full shadow-[0_0_10px_#8F44FF]"></span>
+               Elenco Principal
+             </h3>
+             <div className="flex gap-5 overflow-x-auto pb-6 scrollbar-hide -mx-4 md:-mx-8 px-4 md:px-8">
+               {topCast.map((person: any) => (
+                 <div key={person.id} className="shrink-0 group w-[110px] md:w-[130px]">
+                   <div className="relative aspect-[1/1.2] rounded-full overflow-hidden mb-3 border-2 border-white/5 group-hover:border-[#8F44FF] transition-all duration-500 shadow-xl">
+                     <Image 
+                       src={person.profile_path ? getTmdbImage(person.profile_path, 'w300') : 'https://picsum.photos/seed/actor/300/450'} 
+                       alt={person.name} 
+                       fill 
+                       className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                       unoptimized
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-[#0A0C10]/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                   </div>
+                   <div className="text-center">
+                      <h4 className="text-[13px] font-bold text-white group-hover:text-[#A661FF] transition-colors line-clamp-1 leading-tight">{person.name}</h4>
+                      <p className="text-[10px] text-[#8A93A6] line-clamp-1 mt-1 font-medium tracking-tight italic">{person.character}</p>
+                   </div>
+                 </div>
+               ))}
+             </div>
+          </div>
+        )}
 
         {/* Veja também */}
         {similarItems.length > 0 && (

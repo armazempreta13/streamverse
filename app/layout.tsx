@@ -13,8 +13,17 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 import { ClientProviders } from '@/components/ClientProviders';
 
 export const metadata: Metadata = {
-  title: 'StreamVerse - Filmes e Séries',
-  description: 'A melhor experiência de streaming.',
+  title: 'StreamVerse - Filmes, Séries e Animes Online em HD',
+  description: 'Assista aos melhores filmes, séries e animes online em alta definição no StreamVerse. O melhor catálogo de streaming com lançamentos atualizados diariamente.',
+  keywords: 'streaming, filmes online, séries online, assistir animes, streamverse, cinema em casa, filmes hd',
+  openGraph: {
+    title: 'StreamVerse - O Universo do Streaming',
+    description: 'A melhor experiência de streaming com catálogo completo de filmes, séries e animes.',
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'StreamVerse',
+  },
+  robots: 'index, follow',
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {

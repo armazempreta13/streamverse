@@ -37,7 +37,7 @@ export function Navbar() {
 
   useEffect(() => {
     import('@/lib/tmdb-service').then(({ getGenres }) => {
-      getGenres('movie').then(data => setGenres(data.slice(0, 10)));
+      getGenres('movie').then(data => setGenres(data.slice(0, 20)));
     });
   }, []);
 
