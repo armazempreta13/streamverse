@@ -136,15 +136,12 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
 
           {/* Sidebar Area */}
           <div className="lg:col-span-4 xl:col-span-3 space-y-6">
-            <div className="bg-[#131520] border border-white/5 p-6 rounded-xl relative overflow-hidden">
-               {backdrop && (
-                 <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <Image src={backdrop} alt={title} fill className="object-cover" unoptimized/>
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#131520] to-transparent" />
-                 </div>
-               )}
+            <div className="bg-[#131520] border border-white/5 p-6 rounded-xl relative overflow-hidden shadow-xl">
                <div className="relative z-10">
-                 <h3 className="font-bold text-lg mb-4 text-white">Sobre a Obra</h3>
+                 <h3 className="font-bold text-lg mb-4 text-white flex items-center gap-2">
+                   <Info className="size-4 text-[#8A93A6]" />
+                   Sobre a Obra
+                 </h3>
                  
                  <div className="flex flex-col gap-3 mb-6">
                    <div className="flex justify-between items-center bg-black/20 p-3 rounded-lg">
