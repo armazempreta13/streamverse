@@ -82,7 +82,9 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
       {isAnime && <OtakuAtmosphere backdropUrl={backdrop} />}
       
       <div className="relative z-10">
-        <Navbar />
+        <Suspense fallback={null}>
+          <Navbar />
+        </Suspense>
       </div>
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 md:px-8 py-8 mt-16 md:mt-20 relative z-10">
         

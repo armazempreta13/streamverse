@@ -87,7 +87,9 @@ export function ContinueWatching({ theme = 'default' }: ContinueWatchingProps = 
   if (loading) {
     return (
       <section className="relative px-6 sm:px-10 pt-6 pb-4">
-        <div className="w-48 h-6 bg-white/5 animate-pulse rounded mb-6" />
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-48 h-7 bg-white/5 animate-pulse rounded" />
+        </div>
         <div className="flex gap-4 sm:gap-5 overflow-x-hidden -mx-6 sm:-mx-10 px-6 sm:px-10">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="w-[240px] sm:w-[280px] aspect-video bg-[#0A0A16] rounded-xl animate-pulse shrink-0" />

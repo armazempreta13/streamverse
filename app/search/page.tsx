@@ -203,12 +203,12 @@ export default function SearchPage() {
   return (
     <main className="min-h-screen bg-[#050510] text-white flex overflow-hidden">
       <div className="flex-1 flex flex-col w-full overflow-y-auto h-screen scrollbar-hide relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#8F44FF]/5 via-[#050510] to-[#050510]">
-        <Suspense fallback={<div />}>
+        <Suspense fallback={null}>
           <Navbar />
-          <div className="flex-1 relative">
-            <SearchResults />
-          </div>
         </Suspense>
+        <div className="flex-1 relative">
+          <SearchResults />
+        </div>
       </div>
     </main>
   );

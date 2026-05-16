@@ -119,10 +119,12 @@ export const TmdbCarousel = React.memo(function TmdbCarousel({ title, endpoint, 
   // Simplificando o gatilho de carregamento: O próprio Skeleton serve como ref para o Observer
   if (!hasLoaded) {
     return (
-      <section ref={scrollRef} className="relative px-6 sm:px-10 pb-10 pt-6 min-h-[300px]">
-        <h3 className="text-[20px] font-display font-bold mb-4 text-white opacity-50 tracking-wide">{title}</h3>
-        <div className="flex gap-4 sm:gap-6 overflow-x-hidden pb-4 pt-2 -mx-6 sm:-mx-10 px-6 sm:px-10">
-           {[...Array(5)].map((_, i) => (
+      <section ref={scrollRef} className="relative px-6 sm:px-10 pb-0 pt-2 min-h-[300px]">
+        <div className="flex items-end justify-between mb-4">
+          <h3 className="text-[24px] font-display font-bold text-white opacity-20 tracking-wide">{title}</h3>
+        </div>
+        <div className="flex gap-4 sm:gap-6 overflow-x-hidden pb-6 pt-2 -mx-6 sm:-mx-10 px-6 sm:px-10">
+           {[...Array(6)].map((_, i) => (
              <div key={`skeleton-${i}`} className={`shrink-0 bg-[#0B1020] animate-pulse ${cardStyle === 'trending' ? 'w-[160px] sm:w-[200px] aspect-[2/3] rounded-[20px]' : 'w-[280px] sm:w-[300px] lg:w-[320px] aspect-[16/10] rounded-[16px]'}`} />
            ))}
         </div>

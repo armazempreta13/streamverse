@@ -10,7 +10,7 @@ export default function SeriesPage() {
     <main className="min-h-screen text-white flex overflow-hidden">
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col w-full overflow-y-auto h-screen scrollbar-hide relative">
-        <Suspense fallback={<div className="h-[80px]" />}>
+        <Suspense fallback={null}>
           <Navbar />
         </Suspense>
         
