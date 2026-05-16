@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { getDetails, getSimilar, formatTmdbToCard, getTmdbImage, getCredits, getKeywords, getTrailerUrl, getSeasons } from '@/lib/tmdb-service';
 import { Metadata } from 'next';
