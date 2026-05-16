@@ -21,6 +21,7 @@ export function useWatchProgress({
   contentImage,
   durationStr,
   isMovie,
+  isActive,
 }: {
   contentSlug: string;
   episodeNumber?: number;
