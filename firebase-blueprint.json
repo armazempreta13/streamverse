@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["email", "role", "createdAt", "updatedAt"]
+    },
+    "Content": {
+      "title": "Content",
+      "description": "A movie, series, or anime in the catalog",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["movie", "series", "anime"] },
+        "year": { "type": "number" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "thumbnailImage": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "seasons": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "slug", "description", "type", "year", "categories", "thumbnailImage", "coverImage", "createdAt", "updatedAt"]
+    },
+    "Episode": {
+      "title": "Episode",
+      "description": "An episode of a series or anime",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "number": { "type": "number" },
+        "season": { "type": "number" },
+        "duration": { "type": "string" },
+        "thumbnailUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "number", "season", "duration", "thumbnailUrl", "videoUrl", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/contents/{contentId}": {
+      "schema": { "$ref": "#/entities/Content" },
+      "description": "Catalog contents"
+    },
+    "/contents/{contentId}/episodes/{episodeId}": {
+      "schema": { "$ref": "#/entities/Episode" },
+      "description": "Episodes of a content"
+    }
+  }
+}

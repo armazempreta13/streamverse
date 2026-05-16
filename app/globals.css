@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-bg-dark: #050510;
+  --color-brand-bg-light: #0B1020;
+  --color-brand-primary: #7B2EFF;
+  --color-brand-primary-light: #9F5BFF;
+  --color-brand-accent-ruby: #FF3D6E;
+  --color-brand-accent-blue: #3B82F6;
+  --color-brand-text-muted: #B8C0D0;
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-montserrat: var(--font-montserrat);
+  --font-bebas: var(--font-bebas);
+  --font-cinzel: var(--font-cinzel);
+  --font-outfit: var(--font-outfit);
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3%) scale(1.02); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.03; }
+  50% { opacity: 0.06; }
+}
+
+@keyframes pulse-slower {
+  0%, 100% { opacity: 0.02; }
+  50% { opacity: 0.04; }
+}
+
+.animate-float-slow {
+  animation: float-slow 15s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.animate-pulse-slower {
+  animation: pulse-slower 12s ease-in-out infinite;
+}
+
+body {
+  background-color: #050510;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
