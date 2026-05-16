@@ -24,7 +24,7 @@ export function PremiumAnimePage() {
           <ContinueWatching theme="anime" />
         </div>
 
-        <div className="mt-8 flex flex-col gap-10 md:gap-12 relative z-10">
+        <div className="mt-8 relative z-10">
 
           {/* 1. Novos Episódios */}
           <div className="relative">
@@ -54,12 +54,13 @@ export function PremiumAnimePage() {
 
           {/* ── Torii Divider ── */}
           {!siteConfig.features.crunchyrollStyleLayout && (
-            <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 flex items-center gap-4 py-1">
+            <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 flex items-center gap-4 py-6 md:py-8">
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF3366]/15 to-transparent" />
               <span className="text-[#FF3366]/20 text-lg">⛩</span>
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF3366]/15 to-transparent" />
             </div>
           )}
+          {siteConfig.features.crunchyrollStyleLayout && <div className="h-6 md:h-10" />}
 
           {/* 2. EM ALTA NO JAPÃO */}
           <div className="relative">
@@ -88,12 +89,13 @@ export function PremiumAnimePage() {
 
           {/* ── Katana Divider ── */}
           {!siteConfig.features.crunchyrollStyleLayout && (
-            <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 flex items-center gap-3 py-1">
+            <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 flex items-center gap-3 py-6 md:py-8">
               <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#8F44FF]/10" />
               <span className="text-[8px] tracking-[0.5em] text-white/8 font-bold">斬</span>
               <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#8F44FF]/10" />
             </div>
           )}
+          {siteConfig.features.crunchyrollStyleLayout && <div className="h-6 md:h-10" />}
           
           {/* 3. Populares */}
           <div className="relative">
