@@ -35,7 +35,7 @@ export default function SeriesPage() {
             <ContinueWatching />
           </div>
 
-          <div className="mt-2 space-y-4 relative z-10">
+          <div className="mt-2 space-y-0 relative z-10">
             {/* 1. Séries em Alta */}
             <TmdbCarousel 
               title="Séries em Alta" 

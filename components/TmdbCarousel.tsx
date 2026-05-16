@@ -111,8 +111,8 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
   if (data.length === 0) return null;
 
   return (
-    <section className="relative px-6 sm:px-10 pb-6 pt-2 group/section">
-      <div className="flex items-end justify-between mb-6">
+    <section className="relative px-6 sm:px-10 pb-0 pt-2 group/section">
+      <div className="flex items-end justify-between mb-4">
         <div className="flex items-center gap-3">
            <h3 className="text-[24px] font-display font-bold text-white tracking-wide">{title}</h3>
            {badge && (
@@ -156,7 +156,7 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
 
         <div 
           ref={scrollRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto pb-8 pt-2 scrollbar-hide snap-x -mx-6 sm:-mx-10 px-6 sm:px-10"
+          className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 pt-2 scrollbar-hide snap-x -mx-6 sm:-mx-10 px-6 sm:px-10"
           style={{ scrollBehavior: 'smooth' }}
         >
           {data.map((item) => {

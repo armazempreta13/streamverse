@@ -7,6 +7,7 @@ export const siteConfig = {
     crunchyrollStyleLayout: false, // Ativa o design de grid e botões idêntico à referência Crunchyroll/Anime
     showAnimesOnHome: true, // Se deve incluir carrosséis de anime na página inicial
     premiumHomeLayout: true, // Ativa a estrutura ideal de catálogo (mistura Netflix/Prime/Crunchyroll)
+    catalogSync: true, // Ativa o sistema de sincronização automática com TMDB (CatalogSyncService)
   },
   hero: {
     // Defina os nomes dos filmes/séries que você quer exibir na Hero.

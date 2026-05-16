@@ -50,7 +50,7 @@ export default function Home() {
             <ContinueWatching />
           </div>
 
-          <div className="mt-2 space-y-4 relative z-10">
+          <div className="mt-2 space-y-0 relative z-10">
             {siteConfig.features.premiumHomeLayout ? (
               <>
                 {/* 2. Em Alta Agora (Mistura de Tudo) */}
