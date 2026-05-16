@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, PlayCircle, ChevronDown, LogOut, Settings } from 'lucide-react';
+import { Search, Bell, PlayCircle, ChevronDown, LogOut, Settings, Star } from 'lucide-react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
