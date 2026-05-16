@@ -156,7 +156,7 @@ function PlayerContent({ slug }: { slug: string }) {
 
   return (
     <main className="min-h-screen bg-[#050510] text-[#D1D5DB] overflow-y-auto font-sans relative overflow-x-hidden">
-       {isAnimeContent && <OtakuAtmosphere />}
+       {isAnimeContent && <OtakuAtmosphere backdropUrl={content?.heroImage} />}
        
        {/* Ambient Backgound Image */}
        <div className="absolute top-0 left-0 w-full h-[600px] z-0 opacity-20 pointer-events-none mix-blend-screen">

@@ -1,11 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { siteConfig } from '@/config/site';
 
 const KANJI = ['鬼', '剣', '夢', '力', '空', '火', '風', '雷', '闇', '光', '魂', '命', '竜', '忍', '神'];
 
-export function OtakuAtmosphere() {
+export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
+  const [bgImage, setBgImage] = useState('/bd.png');
+
+  useEffect(() => {
+    if (siteConfig.features.dynamicAnimeBackground && backdropUrl) {
+      setBgImage(backdropUrl);
+    } else {
+      setBgImage('/bd.png');
+    }
+  }, [backdropUrl]);
+
   if (!siteConfig.features.otakuPremium) return null;
 
   return (
@@ -18,7 +28,7 @@ export function OtakuAtmosphere() {
         <div 
           className="absolute inset-[-30px] bg-cover bg-center bg-no-repeat opacity-[0.08] animate-sceneDrift will-change-transform mix-blend-screen"
           style={{ 
-            backgroundImage: 'url(/bd.png)'
+            backgroundImage: `url(${bgImage})`
           }} 
         />
         {/* Edge fade — melts into darkness at borders */}

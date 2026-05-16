@@ -12,6 +12,7 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 import { ClientProviders } from '@/components/ClientProviders';
 import { SecurityGuard } from '@/components/SecurityGuard';
+import { Footer } from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'StreamVerse - Filmes, Séries e Animes Online em HD',
@@ -33,7 +34,12 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className="font-sans antialiased bg-[#050510]" suppressHydrationWarning>
 
         <ClientProviders>
-          {children}
+          <div className="flex flex-col min-h-screen">
+            <div className="flex-1">
+              {children}
+            </div>
+            <Footer />
+          </div>
           <GlobalAmbilight />
           <SecurityGuard />
         </ClientProviders>
