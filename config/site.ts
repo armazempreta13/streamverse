@@ -10,6 +10,7 @@ export const siteConfig = {
     premiumHomeLayout: true, // Ativa a estrutura ideal de catálogo (mistura Netflix/Prime/Crunchyroll)
     catalogSync: true, // Ativa o sistema de sincronização automática com TMDB (CatalogSyncService)
     securityGuard: true, // Ativa o sistema de segurança multicamadas (fingerprint, detecção de bots)
+    enableNotifications: false, // Ativa o sistema de sininho e notificações de lançamentos na Navbar
   },
   security: {
     rateLimitApiPerMinute: 60,   // Máx requests por minuto em rotas /api/*

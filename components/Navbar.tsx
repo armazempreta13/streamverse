@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, PlayCircle, ChevronDown, LogOut, Settings, Star } from 'lucide-react';
+import { Search, PlayCircle, ChevronDown, LogOut, Settings, Star } from 'lucide-react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 
 const menuItems = [
   { name: 'Início', href: '/' },
@@ -255,10 +256,7 @@ export function Navbar() {
         </button>
 
         {/* Notifications */}
-        <button className="relative text-[#8A93A6] hover:text-white transition-colors hover:scale-110 active:scale-95">
-          <Bell className="size-[20px]" />
-          <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-[#8F44FF]"></span>
-        </button>
+        <NotificationDropdown />
 
         {/* User Profile / Auth */}
         {user && (

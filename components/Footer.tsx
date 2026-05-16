@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Github, Twitter, Instagram, Film, AlertTriangle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export function Footer() {
   const pathname = usePathname();
@@ -13,71 +13,62 @@ export function Footer() {
   }
 
   return (
-    <footer className="w-full bg-[#03030A] border-t border-white/5 pt-12 pb-8 mt-auto relative z-[60]">
-      <div className="max-w-[1600px] mx-auto px-6 md:px-10">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-10 md:gap-4 mb-12">
+    <footer className="w-full relative mt-auto z-[60]">
+      {/* Premium Top Border Glow */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#8F44FF]/30 to-transparent" />
+      
+      <div className="w-full bg-[#050510]/80 backdrop-blur-xl pt-10 pb-8">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-10 flex flex-col items-center gap-8">
           
-          <div className="flex flex-col max-w-sm">
-            <Link href="/" className="flex items-center gap-2 mb-4 group w-fit">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#8F44FF] to-[#FF3366] flex items-center justify-center group-hover:scale-105 transition-transform">
-                 <Film className="size-4 text-white" />
-              </div>
-              <span className="text-[20px] font-display font-bold tracking-tight text-white">StreamVerse</span>
-            </Link>
-            <p className="text-sm text-[#8A93A6] leading-relaxed mb-6">
-              A sua plataforma definitiva para explorar filmes, séries e animes. 
-              Entretenimento premium com a melhor qualidade e usabilidade.
+          {/* Aviso Legal Elegante */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-5 rounded-2xl bg-[#0A0A16] border border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+            <div className="w-10 h-10 shrink-0 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+               <AlertCircle className="size-5 text-amber-500" />
+            </div>
+            <p className="text-[12px] text-[#8A93A6] leading-relaxed text-center sm:text-left max-w-3xl">
+              <strong className="text-white font-medium tracking-wide">Indexador Automático:</strong> Nós não armazenamos, hospedamos ou fazemos upload de nenhum vídeo ou mídia. Todo o conteúdo reproduzido é buscado automaticamente na internet e provido por servidores de terceiros não afiliados a nós. Em caso de infrações de direitos autorais, notifique os provedores de hospedagem responsáveis.
             </p>
-            
-            <div className="flex items-center gap-4">
-              <a href="#" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-[#8A93A6] hover:bg-[#1DA1F2] hover:text-white hover:shadow-[0_0_15px_rgba(29,161,242,0.4)] transition-all">
-                 <Twitter className="size-4" />
-              </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-[#8A93A6] hover:bg-[#E1306C] hover:text-white hover:shadow-[0_0_15px_rgba(225,48,108,0.4)] transition-all">
-                 <Instagram className="size-4" />
-              </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-[#8A93A6] hover:bg-white/20 hover:text-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all">
-                 <Github className="size-4" />
-              </a>
-            </div>
           </div>
-          
-          <div className="flex flex-wrap gap-12 sm:gap-20">
-            <div className="flex flex-col gap-4">
-              <h4 className="text-white font-bold tracking-wide uppercase text-sm mb-2">Navegação</h4>
-              <Link href="/movies" className="text-sm text-[#8A93A6] hover:text-white transition-colors">Filmes</Link>
-              <Link href="/series" className="text-sm text-[#8A93A6] hover:text-white transition-colors">Séries</Link>
-              <Link href="/animes" className="text-sm text-[#8A93A6] hover:text-white transition-colors">Animes</Link>
-              <Link href="/search" className="text-sm text-[#8A93A6] hover:text-white transition-colors">Buscar</Link>
-            </div>
-            
-            <div className="flex flex-col gap-4">
-              <h4 className="text-white font-bold tracking-wide uppercase text-sm mb-2">Legal</h4>
-              <Link href="/termos" className="text-sm text-[#8A93A6] hover:text-white transition-colors">Termos de Uso</Link>
-              <Link href="/privacidade" className="text-sm text-[#8A93A6] hover:text-white transition-colors">Privacidade</Link>
-              <Link href="/dmca" className="text-sm text-[#8A93A6] hover:text-white transition-colors">DMCA</Link>
-              <Link href="/contato" className="text-sm text-[#8A93A6] hover:text-white transition-colors">Contato</Link>
-            </div>
-          </div>
-        </div>
-        
-        {/* Aviso Legal sobre Hospedagem */}
-        <div className="bg-[#131520] border border-amber-500/10 rounded-xl p-5 flex items-start sm:items-center gap-4 mb-8 relative overflow-hidden group">
-           <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-           <AlertTriangle className="size-5 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
-           <p className="text-xs sm:text-sm text-[#8A93A6] leading-relaxed relative z-10">
-             <strong className="text-white">Aviso Legal:</strong> O StreamVerse funciona apenas como um indexador automático. 
-             <strong className="text-amber-500"> Nós não armazenamos, não hospedamos e não enviamos nenhum vídeo ou arquivo em nossos servidores.</strong> Todo o conteúdo exibido é provido por plataformas e servidores de terceiros não afiliados a nós. Em caso de infração de direitos autorais, a notificação deve ser enviada aos servidores de hospedagem responsáveis.
-           </p>
-        </div>
 
-        <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#8A93A6] font-medium tracking-wide">
-            © {new Date().getFullYear()} StreamVerse. Todos os direitos reservados.
-          </p>
-          <p className="text-xs text-[#8A93A6] font-medium tracking-wide">
-            Desenvolvido com <span className="text-[#FF3366]">❤️</span> para a comunidade
-          </p>
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent max-w-2xl" />
+
+          {/* Links e Créditos */}
+          <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-4xl gap-6">
+            
+            <div className="flex items-center gap-6 text-[13px] font-medium text-[#8A93A6]">
+              <Link href="/termos" className="hover:text-white transition-colors relative group">
+                Termos
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all group-hover:w-full" />
+              </Link>
+              <Link href="/privacidade" className="hover:text-white transition-colors relative group">
+                Privacidade
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all group-hover:w-full" />
+              </Link>
+              <Link href="/dmca" className="hover:text-white transition-colors relative group">
+                DMCA
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all group-hover:w-full" />
+              </Link>
+              <Link href="/contato" className="hover:text-white transition-colors relative group">
+                Contato
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all group-hover:w-full" />
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-2 text-[12px] text-[#8A93A6]">
+              <span>© {new Date().getFullYear()} StreamVerse.</span>
+              <span className="w-1 h-1 rounded-full bg-white/20 mx-1" />
+              <span>Criado por</span>
+              <a 
+                href="https://phstatic.com.br" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="font-black tracking-wide bg-gradient-to-r from-[#8F44FF] to-[#FF3366] bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+              >
+                phstatic.com.br
+              </a>
+            </div>
+
+          </div>
         </div>
       </div>
     </footer>

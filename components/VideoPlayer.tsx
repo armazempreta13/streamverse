@@ -41,11 +41,6 @@ export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl,
               <Play className="size-8 fill-white ml-1 group-hover/btn:scale-110 transition-transform" />
               <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-ping opacity-20" />
             </button>
-
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
-               <p className="text-white font-black text-xl tracking-tighter uppercase drop-shadow-lg">Clique para assistir</p>
-               <div className={`w-12 h-1 rounded-full ${theme === 'anime' ? 'bg-[#FF3366]' : 'bg-[#8F44FF]'}`} />
-            </div>
           </div>
         ) : (
           <>
@@ -60,15 +55,8 @@ export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl,
         )}
       </div>
       
-      {/* Context Actions / Notice under player */}
+      
       <div className="flex flex-col gap-3 mt-4">
-        <div className="bg-[#131520] border border-white/5 px-6 py-4 rounded-xl flex items-start sm:items-center gap-4">
-          <Info className={`size-5 mt-0.5 sm:mt-0 shrink-0 ${theme === 'anime' ? 'text-[#FF3366]' : 'text-[#8F44FF]'}`} />
-          <p className="text-sm text-[#8A93A6]">
-            <strong className="text-white">DICA PREMIUM:</strong> Ao iniciar o player, o progresso será salvo automaticamente em seu <span className={theme === 'anime' ? 'text-[#FF3366]' : 'text-[#A661FF]'}>Continuar Assistindo</span>.
-          </p>
-        </div>
-        
         <div className="bg-[#131520] border border-amber-500/20 px-6 py-4 rounded-xl flex items-start sm:items-center gap-4">
           <div className="w-5 h-5 shrink-0 rounded-full bg-amber-500/20 flex items-center justify-center mt-0.5 sm:mt-0">
             <span className="text-amber-500 font-black text-xs">!</span>
