@@ -201,8 +201,8 @@ function SearchResults() {
 
 export default function SearchPage() {
   return (
-    <main className="min-h-screen bg-[#050510] text-white flex overflow-hidden">
-      <div className="flex-1 flex flex-col w-full overflow-y-auto h-screen scrollbar-hide relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#8F44FF]/5 via-[#050510] to-[#050510]">
+    <main className="min-h-screen bg-[#050510] text-white flex">
+      <div className="flex-1 flex flex-col w-full relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#8F44FF]/5 via-[#050510] to-[#050510]">
         <Suspense fallback={null}>
           <Navbar />
         </Suspense>

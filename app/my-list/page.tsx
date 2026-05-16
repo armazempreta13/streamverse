@@ -122,9 +122,9 @@ function MyListContent() {
 
 export default function MyListPage() {
   return (
-    <main className="min-h-screen bg-[#050510] text-white flex overflow-hidden">
+    <main className="min-h-screen bg-[#050510] text-white flex">
       <Sidebar />
-      <div className="flex-1 flex flex-col ml-[80px] w-[calc(100%-80px)] overflow-y-auto h-screen scrollbar-hide relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#8F44FF]/5 via-[#050510] to-[#050510]">
+      <div className="flex-1 flex flex-col ml-[80px] w-[calc(100%-80px)] relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#8F44FF]/5 via-[#050510] to-[#050510]">
         <Suspense fallback={null}>
           <Navbar />
         </Suspense>

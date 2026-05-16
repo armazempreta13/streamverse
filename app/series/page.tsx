@@ -7,9 +7,9 @@ import { TmdbCarousel } from '@/components/TmdbCarousel';
 
 export default function SeriesPage() {
   return (
-    <main className="min-h-screen text-white flex overflow-hidden">
+    <main className="min-h-screen text-white flex">
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col w-full overflow-y-auto h-screen scrollbar-hide relative">
+      <div className="flex-1 flex flex-col w-full relative">
         <Suspense fallback={null}>
           <Navbar />
         </Suspense>

@@ -8,9 +8,9 @@ export default function AnimesPage() {
   const isPremium = siteConfig.features.otakuPremium;
 
   return (
-    <main className="min-h-screen text-white flex overflow-hidden">
+    <main className="min-h-screen text-white flex">
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col w-full overflow-y-auto h-screen scrollbar-hide relative bg-[#050510] z-10">
+      <div className="flex-1 flex flex-col w-full relative bg-[#050510] z-10">
         <Suspense fallback={null}>
           <Navbar />
         </Suspense>

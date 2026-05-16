@@ -158,11 +158,11 @@ export default function ContentPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050510] text-white flex overflow-hidden">
+    <main className="min-h-screen bg-[#050510] text-white flex">
       <Sidebar />
-      <div className="flex-1 flex flex-col ml-[80px] w-[calc(100%-80px)] overflow-y-auto h-screen scrollbar-hide relative pb-20">
+      <div className="flex-1 flex flex-col ml-[80px] w-[calc(100%-80px)] relative pb-20">
         <div className="relative z-50">
-          <React.Suspense fallback={<div className="h-[80px]" />}>
+          <React.Suspense fallback={null}>
             <Navbar />
           </React.Suspense>
         </div>
