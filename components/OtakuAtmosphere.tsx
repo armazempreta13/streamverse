@@ -18,6 +18,12 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
 
   if (!siteConfig.features.otakuPremium) return null;
 
+  // Deterministic pseudo-random to prevent React Hydration Mismatch
+  const pseudoRandom = (seed: number) => {
+    const x = Math.sin(seed + 1) * 10000;
+    return x - Math.floor(x);
+  };
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
 
@@ -99,7 +105,7 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
           ═══════════════════════════════════════════════ */}
       <div className="absolute inset-0 opacity-70 overflow-hidden z-[5]">
          {[...Array(15)].map((_, i) => {
-           const size = Math.random() * 6 + 4;
+           const size = pseudoRandom(i * 10) * 6 + 4;
            const isLarge = i < 8;
            return (
              <div 
@@ -111,14 +117,14 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
                  background: isLarge 
                    ? 'linear-gradient(135deg, #FFB8D4 0%, #FF90B8 100%)' 
                    : 'linear-gradient(135deg, #FFA6C9 0%, #FF80B3 100%)',
-                 left: `${Math.random() * 110 - 5}%`,
+                 left: `${pseudoRandom(i * 11) * 110 - 5}%`,
                  top: `-60px`,
-                 opacity: Math.random() * 0.5 + (isLarge ? 0.4 : 0.15),
+                 opacity: pseudoRandom(i * 12) * 0.5 + (isLarge ? 0.4 : 0.15),
                  borderRadius: '50% 0 50% 50%',
-                 transform: `rotate(${Math.random() * 360}deg)`,
+                 transform: `rotate(${pseudoRandom(i * 13) * 360}deg)`,
                  boxShadow: isLarge ? '0 0 8px rgba(255,166,201,0.2)' : 'none',
-                 animation: `sakuraFall${isLarge ? 'Slow' : ''} ${Math.random() * 12 + (isLarge ? 16 : 10)}s cubic-bezier(0.4, 0, 0.2, 1) infinite`,
-                 animationDelay: `-${Math.random() * 25}s`,
+                 animation: `sakuraFall${isLarge ? 'Slow' : ''} ${pseudoRandom(i * 14) * 12 + (isLarge ? 16 : 10)}s cubic-bezier(0.4, 0, 0.2, 1) infinite`,
+                 animationDelay: `-${pseudoRandom(i * 15) * 25}s`,
                  willChange: 'transform'
                }}
              />
@@ -135,15 +141,15 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
             key={`ff-${i}`}
             className="absolute rounded-full"
             style={{
-              width: `${Math.random() * 3 + 2}px`,
-              height: `${Math.random() * 3 + 2}px`,
+              width: `${pseudoRandom(i * 20) * 3 + 2}px`,
+              height: `${pseudoRandom(i * 21) * 3 + 2}px`,
               background: i % 3 === 0 ? '#FFA040' : i % 3 === 1 ? '#FF3366' : '#8F44FF',
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: `${pseudoRandom(i * 22) * 100}%`,
+              top: `${pseudoRandom(i * 23) * 100}%`,
               opacity: 0,
               boxShadow: `0 0 4px ${i % 3 === 0 ? '#FFA040' : i % 3 === 1 ? '#FF3366' : '#8F44FF'}`,
-              animation: `fireflyFloat ${8 + Math.random() * 10}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 12}s`,
+              animation: `fireflyFloat ${8 + pseudoRandom(i * 24) * 10}s ease-in-out infinite`,
+              animationDelay: `${pseudoRandom(i * 25) * 12}s`,
               willChange: 'transform, opacity'
             }}
           />

@@ -79,6 +79,26 @@ export default function SeriesPage() {
               cardStyle="media" 
               seeAllHref="/search?type=tv&sort=top_rated"
             />
+
+            {siteConfig.features.extendedCatalogs && (
+              <>
+                {/* 6. Maratonas Imperdíveis */}
+                <TmdbCarousel 
+                  title="Maratonas Imperdíveis" 
+                  endpoint="popular_series" 
+                  cardStyle="media" 
+                  seeAllHref="/search?type=tv&sort=popular"
+                />
+
+                {/* 7. Mistério e Suspense */}
+                <TmdbCarousel 
+                  title="Mistério e Suspense" 
+                  endpoint="thriller_series" 
+                  cardStyle="media" 
+                  seeAllHref="/search?type=tv&genre=9648"
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import React from 'react';
 import { HeroBanner } from '@/components/HeroBanner';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { TmdbCarousel } from '@/components/TmdbCarousel';
+import { siteConfig } from '@/config/site';
 
 const KANJI_BG = ['鬼', '剣', '夢', '力', '空', '火', '風', '雷', '闇', '光', '魂', '命', '侍', '忍', '竜'];
 
@@ -149,7 +150,7 @@ export function StandardAnimePage() {
           />
         </div>
         
-        {/* Populares */}
+        {/* Populares / Mais Assistidos */}
         <div className="relative">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[30%] h-full bg-[#FF3366] rounded-full mix-blend-screen filter blur-[200px] opacity-[0.02] pointer-events-none -z-10" />
           <div className="absolute top-[-16px] left-6 md:left-10 flex items-center gap-2">
@@ -158,11 +159,58 @@ export function StandardAnimePage() {
           </div>
           <TmdbCarousel 
             title="Mais Assistidos" 
-            endpoint="anime" 
+            endpoint="popular_anime" 
             cardStyle="media" 
             seeAllHref="/search?type=anime"
           />
         </div>
+
+        {siteConfig.features.extendedCatalogs && (
+          <>
+            {/* Ação e Shounen */}
+            <TmdbCarousel 
+              title="Ação e Shounen" 
+              endpoint="action_anime" 
+              cardStyle="media" 
+              seeAllHref="/search?type=anime"
+            />
+            
+            {/* Fantasia e Isekai */}
+            <div className="relative">
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[30%] h-[200px] bg-[#3B82F6] rounded-full mix-blend-screen filter blur-[150px] opacity-[0.03] pointer-events-none -z-10" />
+              <TmdbCarousel 
+                title="Fantasia e Isekai" 
+                endpoint="fantasy_anime" 
+                cardStyle="media" 
+                seeAllHref="/search?type=anime"
+              />
+            </div>
+            
+            {/* Comédia e Slice of Life */}
+            <TmdbCarousel 
+              title="Comédia e Slice of Life" 
+              endpoint="comedy_anime" 
+              cardStyle="media" 
+              seeAllHref="/search?type=anime"
+            />
+
+            {/* Romance */}
+            <TmdbCarousel 
+              title="Romance" 
+              endpoint="romance_anime" 
+              cardStyle="media" 
+              seeAllHref="/search?type=anime"
+            />
+            
+            {/* Top Avaliados (Aclamados) */}
+            <TmdbCarousel 
+              title="Aclamados pela Crítica" 
+              endpoint="top_anime" 
+              cardStyle="trending" 
+              seeAllHref="/search?type=anime"
+            />
+          </>
+        )}
 
         {/* Bottom Japanese watermark */}
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 py-6 flex items-center justify-center gap-6">

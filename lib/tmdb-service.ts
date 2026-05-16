@@ -97,6 +97,16 @@ export async function getTopAnime(page = 1) {
   return data?.results || [];
 }
 
+export async function getAnimeByGenre(genreId: string | number, page = 1) {
+  const data = await fetchFromTmdb('/discover/tv', {
+    with_genres: `16,${genreId}`,
+    with_original_language: 'ja',
+    sort_by: 'popularity.desc',
+    page: String(page)
+  });
+  return data?.results || [];
+}
+
 export async function getByGenre(type: 'movie' | 'tv', genreId: string | number, page = 1) {
   const data = await fetchFromTmdb(`/discover/${type}`, {
     with_genres: String(genreId),

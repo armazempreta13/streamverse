@@ -58,6 +58,8 @@ export function ContinueWatching({ theme = 'default' }: ContinueWatchingProps = 
             subtitle: d.subtitle || (d.isMovie ? 'Filme' : 'Série'),
             imageUrl: d.contentImage || 'https://picsum.photos/seed/thumb/300/169',
             progress: d.progressPercentage || 0,
+            watchedSeconds: d.watchedSeconds || 0,
+            totalSeconds: d.totalSeconds || 0,
             slug: d.contentSlug,
             href,
           };
@@ -138,10 +140,20 @@ export function ContinueWatching({ theme = 'default' }: ContinueWatchingProps = 
           className="flex gap-4 sm:gap-5 overflow-x-auto pb-4 scrollbar-hide snap-x -mx-6 sm:-mx-10 px-6 sm:px-10"
         >
         {dataList.map((item, idx) => {
-          const remainingMins = Math.max(1, Math.floor((100 - (item.progress || 0)) * 0.45));
-          const remainingText = remainingMins > 60
-            ? `${Math.floor(remainingMins / 60)}h ${remainingMins % 60}m`
-            : `${remainingMins}m`;
+          let remainingText = '';
+          if (item.totalSeconds && item.totalSeconds > 0) {
+            const remainingSecs = Math.max(0, item.totalSeconds - (item.watchedSeconds || 0));
+            const remainingMins = Math.max(1, Math.floor(remainingSecs / 60));
+            remainingText = remainingMins >= 60
+              ? `${Math.floor(remainingMins / 60)}h ${remainingMins % 60}m`
+              : `${remainingMins}m`;
+          } else {
+            // Fallback para caso antigo onde não tem totalSeconds
+            const remainingMins = Math.max(1, Math.floor((100 - (item.progress || 0)) * 0.45));
+            remainingText = remainingMins >= 60
+              ? `${Math.floor(remainingMins / 60)}h ${remainingMins % 60}m`
+              : `${remainingMins}m`;
+          }
 
           return (
             <Link

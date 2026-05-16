@@ -93,15 +93,15 @@ service cloud.firestore {
 
     // Comentários: qualquer pessoa pode ler e criar (sem login)
     match /comments/{commentId} {
-      allow read, list: if true;
-      allow create: if request.resource.data.keys().hasAll(['contentId', 'userName', 'userEmail', 'text'])
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['contentId', 'userName', 'text', 'createdAt'])
                     && request.resource.data.text is string
                     && request.resource.data.text.size() > 0
                     && request.resource.data.text.size() < 2000
                     && request.resource.data.userName is string
-                    && request.resource.data.userName.size() > 0
-                    && request.resource.data.userEmail is string;
-      allow update, delete: if false;
+                    && request.resource.data.userName.size() > 0;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+      allow delete: if false;
     }
   }
 }

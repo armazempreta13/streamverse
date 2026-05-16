@@ -79,6 +79,43 @@ export default function MoviesPage() {
               cardStyle="media" 
               seeAllHref="/search?type=movie&sort=top_rated"
             />
+
+            {siteConfig.features.extendedCatalogs && (
+              <>
+                {/* 6. Sucessos de Bilheteria */}
+                <TmdbCarousel 
+                  title="Sucessos de Bilheteria" 
+                  endpoint="popular_movies" 
+                  cardStyle="media" 
+                  seeAllHref="/search?type=movie&sort=popular"
+                />
+
+                {/* 7. Chegando em Breve */}
+                <TmdbCarousel 
+                  title="Chegando em Breve" 
+                  endpoint="upcoming_movies" 
+                  cardStyle="media" 
+                  seeAllHref="/search?type=movie&sort=upcoming"
+                  badge="EM BREVE"
+                />
+
+                {/* 8. Terror em Alta */}
+                <TmdbCarousel 
+                  title="Terror em Alta" 
+                  endpoint="horror_movies" 
+                  cardStyle="media" 
+                  seeAllHref="/search?type=movie&genre=27"
+                />
+
+                {/* 9. Comédias */}
+                <TmdbCarousel 
+                  title="Comédias" 
+                  endpoint="comedy_movies" 
+                  cardStyle="media" 
+                  seeAllHref="/search?type=movie&genre=35"
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

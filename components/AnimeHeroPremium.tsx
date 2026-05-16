@@ -26,7 +26,6 @@ export function AnimeHeroPremium() {
         const logosMap: Record<number, string> = {};
         await Promise.all(top5.map(async (item: any) => {
           let logo = await fetchLogo(item.id, 'tv');
-          if (!logo) logo = await fetchLogo(item.id, 'movie');
           if (logo) logosMap[item.id] = logo;
         }));
         setLogos(logosMap);

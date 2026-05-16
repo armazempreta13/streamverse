@@ -4,14 +4,13 @@ import React, { useRef, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TrendingCard, MediaCard } from './Cards';
 import Link from 'next/link';
-import { getTrending, getPopular, getAnime, formatTmdbToCard, getRecentReleases, getRecentAnime, getTopRated, getTopAnime, getUpcoming, getByGenre } from '@/lib/tmdb-service';
-
+import { getTrending, getPopular, getAnime, formatTmdbToCard, getRecentReleases, getRecentAnime, getTopRated, getTopAnime, getUpcoming, getByGenre, getAnimeByGenre } from '@/lib/tmdb-service';
 // TMDB genre IDs
 const GENRE = { action: 28, horror: 27, comedy: 35, scifi: 878, thriller: 53, romance: 10749, drama: 18, animation: 16 };
 
 interface TmdbCarouselProps {
   title: string;
-  endpoint: 'trending' | 'trending_movies' | 'trending_series' | 'popular' | 'anime' | 'popular_movies' | 'popular_series' | 'recent_movies' | 'recent_series' | 'recent_anime' | 'top_rated_movies' | 'top_rated_series' | 'top_anime' | 'upcoming_movies' | 'action_movies' | 'horror_movies' | 'scifi_movies' | 'comedy_movies' | 'action_series' | 'drama_series' | 'thriller_series';
+  endpoint: 'trending' | 'trending_movies' | 'trending_series' | 'popular' | 'anime' | 'popular_movies' | 'popular_series' | 'recent_movies' | 'recent_series' | 'recent_anime' | 'top_rated_movies' | 'top_rated_series' | 'top_anime' | 'upcoming_movies' | 'action_movies' | 'horror_movies' | 'scifi_movies' | 'comedy_movies' | 'action_series' | 'drama_series' | 'thriller_series' | 'action_anime' | 'comedy_anime' | 'fantasy_anime' | 'romance_anime' | 'popular_anime';
   cardStyle?: 'trending' | 'media';
   seeAllHref?: string;
   badge?: string;
@@ -60,6 +59,11 @@ export const TmdbCarousel = React.memo(function TmdbCarousel({ title, endpoint, 
         else if (endpoint === 'action_series') results = await getByGenre('tv', GENRE.action);
         else if (endpoint === 'drama_series') results = await getByGenre('tv', GENRE.drama);
         else if (endpoint === 'thriller_series') results = await getByGenre('tv', GENRE.thriller);
+        else if (endpoint === 'action_anime') results = await getAnimeByGenre(10759); // Action & Adventure
+        else if (endpoint === 'comedy_anime') results = await getAnimeByGenre(35); // Comedy
+        else if (endpoint === 'fantasy_anime') results = await getAnimeByGenre(10765); // Sci-Fi & Fantasy
+        else if (endpoint === 'romance_anime') results = await getAnimeByGenre(10749); // Romance
+        else if (endpoint === 'popular_anime') results = await getAnime(); // getAnime by default uses popularity.desc
 
         if (results && results.length > 0) {
             // Remove duplicates within the same carousel just in case

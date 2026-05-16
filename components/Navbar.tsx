@@ -109,7 +109,15 @@ export function Navbar() {
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 h-[80px] flex items-center justify-between px-6 sm:px-10 z-[200] bg-gradient-to-b from-[#050510]/80 to-transparent backdrop-blur-sm pt-4">
+    <header className="absolute top-0 left-0 right-0 z-[200]">
+      {/* Gradiente de fundo super suave para fusão com a Hero, sem linha marcada */}
+      <div 
+        className="absolute top-0 left-0 right-0 h-[250px] pointer-events-none"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(5,5,16,0.95) 0%, rgba(5,5,16,0.7) 25%, rgba(5,5,16,0.3) 55%, rgba(5,5,16,0) 100%)'
+        }}
+      />
+      <div className="relative w-full h-[80px] flex items-center justify-between px-6 sm:px-10 pt-4">
       {/* Logo */}
       <Link href="/" className="flex items-center gap-2.5 group cursor-pointer w-[200px] hover:opacity-80 transition-opacity">
         <div className="w-[32px] h-[32px] rounded-[10px] border-[1.5px] border-[#8F44FF] flex items-center justify-center bg-[#8F44FF]/10 shadow-[0_0_15px_rgba(143,68,255,0.3)]">
@@ -288,6 +296,7 @@ export function Navbar() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </header>
   );

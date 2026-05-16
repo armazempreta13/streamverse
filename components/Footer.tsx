@@ -14,10 +14,15 @@ export function Footer() {
 
   return (
     <footer className="w-full relative mt-auto z-[60]">
-      {/* Premium Top Border Glow */}
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#8F44FF]/30 to-transparent" />
+      {/* Gradient superior super suave para fundir o footer com o fundo da página */}
+      <div 
+        className="absolute top-[-250px] left-0 w-full h-[250px] pointer-events-none"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(5,5,16,0) 0%, rgba(5,5,16,0.3) 45%, rgba(5,5,16,0.7) 75%, rgba(5,5,16,1) 100%)'
+        }}
+      />
       
-      <div className="w-full bg-[#050510]/80 backdrop-blur-xl pt-10 pb-8">
+      <div className="w-full bg-[#050510] pt-4 pb-8 relative z-10">
         <div className="max-w-[1200px] mx-auto px-6 md:px-10 flex flex-col items-center gap-8">
           
           {/* Aviso Legal Elegante */}

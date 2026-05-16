@@ -11,6 +11,7 @@ export const siteConfig = {
     catalogSync: true, // Ativa o sistema de sincronização automática com TMDB (CatalogSyncService)
     securityGuard: true, // Ativa o sistema de segurança multicamadas (fingerprint, detecção de bots)
     enableNotifications: false, // Ativa o sistema de sininho e notificações de lançamentos na Navbar
+    extendedCatalogs: true, // Ativa catálogos extensos e muito populados em Filmes, Séries e Animes
   },
   security: {
     rateLimitApiPerMinute: 60,   // Máx requests por minuto em rotas /api/*

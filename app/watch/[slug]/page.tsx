@@ -211,11 +211,19 @@ function PlayerContent({ slug }: { slug: string }) {
                {/* Video Frame */}
                <div className="w-full aspect-video bg-black relative flex items-center justify-center group overflow-hidden">
                  {videoSrc && hasClickedPlay ? (
-                    isIframeHtml ? (
-                      <div className="w-full h-full object-cover [&_iframe]:w-full [&_iframe]:h-full border-0" dangerouslySetInnerHTML={{ __html: videoSrc }} />
-                    ) : (
-                      <iframe src={videoSrc} allowFullScreen className="w-full h-full border-0" />
-                    )
+                    (() => {
+                      let finalVideoSrc = videoSrc;
+                      if (watchedSeconds > 30) {
+                        const timeParam = `t=${Math.floor(watchedSeconds)}`;
+                        finalVideoSrc = finalVideoSrc.includes('?') ? `${finalVideoSrc}&${timeParam}` : `${finalVideoSrc}?${timeParam}`;
+                      }
+                      
+                      return isIframeHtml ? (
+                        <div className="w-full h-full object-cover [&_iframe]:w-full [&_iframe]:h-full border-0" dangerouslySetInnerHTML={{ __html: finalVideoSrc }} />
+                      ) : (
+                        <iframe src={finalVideoSrc} allowFullScreen className="w-full h-full border-0" />
+                      );
+                    })()
                  ) : (
                     <div 
                       className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer group/play"
@@ -300,6 +308,20 @@ function PlayerContent({ slug }: { slug: string }) {
 
 
             <div className="flex flex-col gap-3 mt-2">
+              {hasClickedPlay && watchedSeconds > 30 && (
+                <div className="bg-[#131520] border border-[#8F44FF]/20 px-6 py-3 rounded-xl flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#8F44FF]/20 flex items-center justify-center">
+                      <Play className="size-4 text-[#8F44FF] ml-0.5" />
+                    </div>
+                    <p className="text-sm text-[#8A93A6]">
+                      Você parou em <strong className="text-white">{Math.floor(watchedSeconds / 60)}m {watchedSeconds % 60}s</strong>. 
+                      <span className="hidden sm:inline"> Se o vídeo não pular automaticamente, arraste a barra de progresso.</span>
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <div className="bg-[#131520] border border-amber-500/20 px-6 py-4 rounded-xl flex items-start sm:items-center gap-4">
                 <div className="w-5 h-5 shrink-0 rounded-full bg-amber-500/20 flex items-center justify-center mt-0.5 sm:mt-0">
                   <span className="text-amber-500 font-black text-xs">!</span>
