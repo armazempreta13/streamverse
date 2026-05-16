@@ -28,6 +28,7 @@ export function Navbar() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -77,6 +78,23 @@ export function Navbar() {
       setActiveItem('');
     }
   }, [pathname, typeParam]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowSuggestions(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -147,7 +165,7 @@ export function Navbar() {
       {/* Right Actions */}
       <div className="ml-auto flex items-center gap-4 sm:gap-6 w-auto md:w-[300px] justify-end">
         {/* Search Bar - hidden on small screens, click icon to open instead? for now keep it responsive */}
-        <div className="relative group hidden sm:block" onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}>
+        <div ref={searchRef} className="relative group hidden sm:block">
           <div className="flex items-center bg-[#0A0A16]/80 backdrop-blur-md border border-white/10 hover:border-white/20 transition-colors rounded-full px-4 py-2 w-48 lg:w-64 focus-within:border-[#8F44FF] focus-within:shadow-[0_0_15px_rgba(143,68,255,0.2)]">
             <Search className={clsx("size-[15px] text-[#8A93A6] mr-2", isSearching && "animate-pulse")} />
             <input
