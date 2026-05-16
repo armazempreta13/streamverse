@@ -5,9 +5,11 @@ export const getTmdbImage = (path: string | null | undefined, size = 'w500') => 
 };
 
 export async function fetchFromTmdb(endpoint: string, params: Record<string, string> = {}, silent = false) {
-  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-  if (!apiKey) {
-    console.warn('Missing NEXT_PUBLIC_TMDB_API_KEY environment variable.');
+  // Use provided key as fallback if environment variable is missing
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY || "e977149fcbba55f76536674e77f0a186";
+  
+  if (!apiKey || apiKey === 'undefined') {
+    if (!silent) console.warn('TMDB: Missing API Key. Please set NEXT_PUBLIC_TMDB_API_KEY.');
     return null;
   }
 
