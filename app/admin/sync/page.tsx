@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { siteConfig } from '@/config/site';
 import { Navbar } from '@/components/Navbar';
 import {
@@ -109,7 +109,9 @@ export default function SyncAdminPage() {
 
   return (
     <div className="min-h-screen bg-[#050510] text-white">
-      <Navbar />
+      <Suspense fallback={<div className="h-20" />}>
+        <Navbar />
+      </Suspense>
       <div className="max-w-6xl mx-auto px-6 py-10 pt-24">
 
         {/* Header */}
