@@ -49,22 +49,30 @@ export default function SeriesPage() {
               title="Novos Episódios" 
               endpoint="recent_series" 
               cardStyle="media" 
-              seeAllHref="/search?type=tv"
+              seeAllHref="/search?type=tv&sort=recent"
               badge="NOVO"
             />
 
-            {/* 3. Populares */}
+            {/* 3. Drama e Emoção */}
             <div className="relative">
-               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[30%] h-full bg-[#3B82F6] rounded-full mix-blend-screen filter blur-[200px] opacity-[0.03] pointer-events-none -z-10" />
+               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[30%] h-[200px] bg-[#3B82F6] rounded-full mix-blend-screen filter blur-[150px] opacity-[0.05] pointer-events-none -z-10" />
                <TmdbCarousel 
-                 title="Populares na StreamVerse" 
-                 endpoint="popular_series" 
+                 title="Drama e Emoção" 
+                 endpoint="drama_series" 
                  cardStyle="media" 
-                 seeAllHref="/search?type=tv"
+                 seeAllHref="/search?type=tv&genre=18"
                />
             </div>
 
-            {/* 4. Top Rated */}
+            {/* 4. Ação e Animação */}
+            <TmdbCarousel 
+              title="Ação e Animação" 
+              endpoint="action_series" 
+              cardStyle="media" 
+              seeAllHref="/search?type=tv&genre=10759"
+            />
+
+            {/* 5. Top Rated */}
             <TmdbCarousel 
               title="Favoritas do Público" 
               endpoint="top_rated_series" 

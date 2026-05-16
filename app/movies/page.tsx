@@ -49,22 +49,30 @@ export default function MoviesPage() {
               title="Recém Lançados" 
               endpoint="recent_movies" 
               cardStyle="media" 
-              seeAllHref="/search?type=movie"
+              seeAllHref="/search?type=movie&sort=recent"
               badge="NOVO"
             />
 
-            {/* 3. Populares */}
+            {/* 3. Ação e Aventura */}
             <div className="relative">
                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[30%] h-full bg-[#8F44FF] rounded-full mix-blend-screen filter blur-[200px] opacity-[0.04] pointer-events-none -z-10" />
                <TmdbCarousel 
-                 title="Populares" 
-                 endpoint="popular_movies" 
+                 title="Ação e Aventura" 
+                 endpoint="action_movies" 
                  cardStyle="media" 
-                 seeAllHref="/search?type=movie"
+                 seeAllHref="/search?type=movie&genre=28"
                />
             </div>
 
-            {/* 4. Top Rated */}
+            {/* 4. Ficção Científica */}
+            <TmdbCarousel 
+              title="Ficção Científica" 
+              endpoint="scifi_movies" 
+              cardStyle="media" 
+              seeAllHref="/search?type=movie&genre=878"
+            />
+
+            {/* 5. Top Rated */}
             <TmdbCarousel 
               title="Melhores Avaliados" 
               endpoint="top_rated_movies" 

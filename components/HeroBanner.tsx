@@ -120,18 +120,26 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
             };
         });
 
-        // 3. Buscar Logos ANTES de renderizar para evitar a "piscada" (Flash of Unstyled Text)
+        // 3. Buscar Logos e Backdrops ANTES de renderizar
         const withLogos = await Promise.all(top5.map(async (item: any) => {
           try {
             const images = await fetchFromTmdb(`/${item.type}/${item.id}/images`, { include_image_language: 'en,pt,null' });
-            if (images && images.logos && images.logos.length > 0) {
-              const bestLogo = images.logos.find((l:any) => l.iso_639_1 === 'pt') 
-                            || images.logos.find((l:any) => l.iso_639_1 === 'en')
-                            || images.logos[0];
-              return { ...item, logoUrl: getTmdbImage(bestLogo.file_path, 'w500') };
+            if (images) {
+              const bestLogo = images.logos?.find((l:any) => l.iso_639_1 === 'pt') 
+                            || images.logos?.find((l:any) => l.iso_639_1 === 'en')
+                            || images.logos?.[0];
+              
+              const backdrops = images.backdrops?.slice(0, 5).map((b: any) => getTmdbImage(b.file_path, 'original')) || [];
+              const allBackdrops = [item.heroImage, ...backdrops].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
+
+              return { 
+                ...item, 
+                logoUrl: bestLogo ? getTmdbImage(bestLogo.file_path, 'w500') : undefined,
+                alternativeBackdrops: allBackdrops.length > 1 ? allBackdrops : [item.heroImage]
+              };
             }
           } catch (e) {}
-          return item;
+          return { ...item, alternativeBackdrops: [item.heroImage] };
         }));
         
         setHeroContents(withLogos);
@@ -142,14 +150,16 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
     fetchHero();
   }, []);
 
+  const [backdropIndex, setBackdropIndex] = useState(0);
+
   const nextSlide = useCallback(() => {
     setHeroContents((prev) => {
       if (!prev.length) return prev;
-      // fade out → troca → fade in
       setTextVisible(false);
       setTimeout(() => {
         setCurrentSlide((curr) => {
           setPrevSlide(curr);
+          setBackdropIndex(0); // Reset backdrop index on slide change
           return curr === prev.length - 1 ? 0 : curr + 1;
         });
         setTimeout(() => setTextVisible(true), 80);
@@ -160,10 +170,21 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
 
   useEffect(() => {
     if (!isHovered && heroContents.length > 1) {
-      const timer = setInterval(nextSlide, 8000);
+      const timer = setInterval(nextSlide, 10000);
       return () => clearInterval(timer);
     }
   }, [isHovered, heroContents.length, nextSlide]);
+
+  // Cycle backdrops for the current slide
+  useEffect(() => {
+    if (!heroContents[currentSlide] || !heroContents[currentSlide].alternativeBackdrops || heroContents[currentSlide].alternativeBackdrops.length <= 1) return;
+    
+    const bgTimer = setInterval(() => {
+      setBackdropIndex((prev) => (prev + 1) % heroContents[currentSlide].alternativeBackdrops.length);
+    }, 4000);
+    
+    return () => clearInterval(bgTimer);
+  }, [currentSlide, heroContents]);
 
   if (heroContents.length === 0) {
     return (
@@ -211,24 +232,33 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
               : 'opacity-0 z-0 pointer-events-none'
           )}
         >
-          {/* Background image with subtle Ken Burns */}
           <div
             className={clsx(
               'absolute inset-0 transition-transform duration-[22000ms] ease-out will-change-transform',
               idx === currentSlide ? 'scale-[1.04]' : 'scale-100'
             )}
           >
-            <Image
-              src={content.heroImage}
-              alt={content.title}
-              fill
-              quality={80}
-              sizes="100vw"
-              loading={idx === 0 ? "eager" : "lazy"}
-              className="object-cover object-[72%_top] will-change-transform"
-              referrerPolicy="no-referrer"
-              priority={idx === 0}
-            />
+            {content.alternativeBackdrops?.map((bg: string, bgIdx: number) => (
+              <div 
+                key={bg}
+                className={clsx(
+                  'absolute inset-0 transition-opacity duration-1000',
+                  idx === currentSlide && bgIdx === backdropIndex ? 'opacity-100' : 'opacity-0'
+                )}
+              >
+                <Image
+                  src={bg}
+                  alt={content.title}
+                  fill
+                  quality={80}
+                  sizes="100vw"
+                  loading={idx === 0 && bgIdx === 0 ? "eager" : "lazy"}
+                  className="object-cover object-[72%_top] will-change-transform"
+                  referrerPolicy="no-referrer"
+                  priority={idx === 0 && bgIdx === 0}
+                />
+              </div>
+            ))}
           </div>
 
           {/* AURA EXCLUSIVA DO SOLO LEVELING (Arise - Shadow Monarch) */}

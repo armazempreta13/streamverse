@@ -41,12 +41,11 @@ export function AnimeHeroPremium() {
     if (items.length <= 1) return;
     const interval = setInterval(() => {
       handleNext();
-    }, 10000);
+    }, 8000);
     return () => clearInterval(interval);
-  }, [items.length, currentSlide]);
+  }, [items.length]);
 
   const handleNext = () => {
-    if (isTransitioning) return;
     setIsTransitioning(true);
     setTextVisible(false);
     setTimeout(() => {
@@ -57,7 +56,6 @@ export function AnimeHeroPremium() {
   };
 
   const handlePrev = () => {
-    if (isTransitioning) return;
     setIsTransitioning(true);
     setTextVisible(false);
     setTimeout(() => {
