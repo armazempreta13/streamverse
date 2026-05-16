@@ -207,7 +207,9 @@ export default function SearchPage() {
           <Navbar />
         </Suspense>
         <div className="flex-1 relative">
+        <Suspense fallback={null}>
           <SearchResults />
+        </Suspense>
         </div>
       </div>
     </main>
