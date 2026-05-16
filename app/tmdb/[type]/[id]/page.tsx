@@ -10,6 +10,7 @@ import { VideoPlayer } from '@/components/VideoPlayer';
 import { CommentSection } from '@/components/CommentSection';
 import { OtakuAtmosphere } from '@/components/OtakuAtmosphere';
 import { BackButton } from '@/components/BackButton';
+import { ShareButton } from '@/components/ShareButton';
 
 export async function generateMetadata({ params }: { params: Promise<{ type: string, id: string }> }): Promise<Metadata> {
   const { type, id } = await params;
@@ -104,19 +105,10 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
              {title}
           </h1>
 
-          {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <BackButton />
-            <button className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors">
-               <Plus className="size-5" />
-            </button>
-            <button className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors">
-               <Download className="size-5" />
-            </button>
             <div className="flex-1" />
-            <button className="bg-transparent hover:bg-white/5 text-[#8A93A6] hover:text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
-               <Share2 className="size-4" /> Compartilhar
-            </button>
+            <ShareButton title={title} />
           </div>
         </div>
 
