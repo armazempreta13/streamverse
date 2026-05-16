@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { Navbar } from '@/components/Navbar';
 
 export const metadata = {
@@ -7,7 +8,9 @@ export const metadata = {
 export default function DMCAPage() {
   return (
     <div className="min-h-screen bg-[#050510] text-[#D1D5DB] font-sans selection:bg-[#8F44FF]/30">
-      <Navbar />
+      <Suspense fallback={<div className="h-[80px] bg-[#050510]" />}>
+        <Navbar />
+      </Suspense>
       
       <div className="pt-32 pb-20 px-6 md:px-10 max-w-[900px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="mb-12">
