@@ -88,11 +88,11 @@ export function GlobalAmbilight() {
       <style>{AMBIENT_STYLES}</style>
       
       {/* ── Cinematic Grain / Noise ── */}
-      {/* Noise super sutil para dar textura premium e evitar banding no fundo escuro */}
+      {/* Noise ultra-sutil para evitar banding sem poluir o visual */}
       <div 
-        className="absolute inset-0 opacity-[0.02] mix-blend-overlay"
+        className="absolute inset-0 opacity-[0.012] mix-blend-overlay"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'repeat',
         }}
       />
@@ -140,24 +140,30 @@ export function GlobalAmbilight() {
         }}
       />
 
-      {/* ── Cinematic Dust Particles (Poeira flutuante) ── */}
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute bottom-[-5%]"
-          style={{
-            left: p.left,
-            width: p.size,
-            height: p.size,
-            background: 'rgba(255,255,255,0.7)',
-            boxShadow: '0 0 4px 1px rgba(166,97,255,0.4)',
-            borderRadius: '50%',
-            animation: `particleFloat ${p.duration} linear ${p.delay} infinite`,
-            opacity: 0,
-            filter: 'blur(0.5px)',
-          }}
-        />
-      ))}
+      {/* ── Cinematic Dust Particles (Poeira flutuante - Reduzido) ── */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const left = `${Math.random() * 100}%`;
+        const size = `${Math.random() * 1.2 + 0.5}px`;
+        const duration = `${Math.random() * 40 + 40}s`;
+        const delay = `-${Math.random() * 40}s`;
+        return (
+          <div
+            key={i}
+            className="absolute bottom-[-5%]"
+            style={{
+              left,
+              width: size,
+              height: size,
+              background: 'rgba(255,255,255,0.4)',
+              boxShadow: '0 0 3px rgba(166,97,255,0.2)',
+              borderRadius: '50%',
+              animation: `particleFloat ${duration} linear ${delay} infinite`,
+              opacity: 0,
+              filter: 'blur(0.8px)',
+            }}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -50,10 +50,10 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
       {/* ═══════════════════════════════════════════════
           LAYER 2 — Subtle Dot Grid Texture
           ═══════════════════════════════════════════════ */}
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-screen" 
+      <div className="absolute inset-0 opacity-[0.015] mix-blend-screen" 
         style={{ 
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.3) 1px, transparent 1px)', 
-          backgroundSize: '32px 32px' 
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.25) 0.5px, transparent 0.5px)', 
+          backgroundSize: '40px 40px' 
         }} 
       />
 
