@@ -36,131 +36,24 @@ function SearchResults() {
       else setLoadingMore(true);
 
       try {
-        let fbFiltered: any[] = [];
-        // Only fetch Firebase on first page
-        if (page === 1) {
-          const qRef = query(collection(db, 'contents'), orderBy('createdAt', 'desc'));
-          const snapshot = await getDocs(qRef);
-          let fbDocs = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              title: data.title,
-              imageUrl: data.thumbnailImage || data.coverImage || 'https://picsum.photos/seed/3/400/600',
-              slug: data.slug,
-              description: data.description,
-              type: data.type,
-              href: `/content/${data.slug}`
-            };
-          });
+        const url = new URL('/api/search', window.location.origin);
+        if (qStr) url.searchParams.append('q', qStr);
+        if (typeStr) url.searchParams.append('type', typeStr);
+        url.searchParams.append('page', String(page));
 
-          fbFiltered = fbDocs.filter(item => {
-            let matchesQ = true;
-            if (qStr) {
-               matchesQ = item.title?.toLowerCase().includes(qStr) || 
-                          item.description?.toLowerCase().includes(qStr);
-            }
-            let matchesType = true;
-            if (typeStr) {
-               matchesType = item.type?.toLowerCase() === typeStr.toLowerCase();
-            }
-            return matchesQ && matchesType;
-          });
-        }
+        const res = await fetch(url.toString());
+        const data = await res.json();
 
-        let tmdbFormatted: any[] = [];
-        if (qStr) {
-          const { searchTmdb, formatTmdbToCard } = await import('@/lib/tmdb-service');
-          const tmdbRes = await searchTmdb(qStr, page);
-          if (tmdbRes.length < 20) setHasMore(false);
-          tmdbFormatted = tmdbRes
-             .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
-             .map((item: any) => {
-                const formatted = formatTmdbToCard(item);
-                return {
-                   id: `tmdb-${item.id}`,
-                   title: formatted.title,
-                   href: `/tmdb/${formatted.type}/${item.id}`,
-                   imageUrl: formatted.imageUrl,
-                   type: formatted.type,
-                   slug: ''
-                };
-             });
+        if (data.success) {
+          const newResults = data.results;
+          if (newResults.length < 20) setHasMore(false);
           
-          if (typeStr) {
-             tmdbFormatted = tmdbFormatted.filter(item => {
-               if (typeStr.toLowerCase() === 'anime') return item.type === 'tv'; // Animes correspond to tv in TMDB items mostly
-               if (typeStr.toLowerCase() === 'series') return item.type === 'tv';
-               return item.type === typeStr.toLowerCase();
-             });
-          }
-        } else if (genreId) {
-          const { getByGenre, formatTmdbToCard } = await import('@/lib/tmdb-service');
-          const typeSearch = (typeStr === 'anime' ? 'tv' : (typeStr as 'movie' | 'tv')) || 'movie';
-          const typeRes = await getByGenre(typeSearch, genreId, page);
-          if (typeRes.length < 20) setHasMore(false);
-          if (typeRes && typeRes.length > 0) {
-             tmdbFormatted = typeRes.map((item: any) => {
-                const formatted = formatTmdbToCard({...item, media_type: typeSearch}); // fallback media_type
-                return {
-                   id: `tmdb-${item.id}`,
-                   title: formatted.title,
-                   href: `/tmdb/${formatted.type}/${item.id}`,
-                   imageUrl: formatted.imageUrl,
-                   type: formatted.type,
-                   slug: ''
-                };
-             });
-          }
-        } else if (typeStr) {
-          const { getPopular, getAnime, formatTmdbToCard } = await import('@/lib/tmdb-service');
-          let typeRes: any[] = [];
-          if (typeStr === 'movie') typeRes = await getPopular('movie', page);
-          else if (typeStr === 'tv' || typeStr === 'series') typeRes = await getPopular('tv', page);
-          else if (typeStr === 'anime') typeRes = await getAnime(page);
-
-          if (typeRes.length < 20) setHasMore(false);
-
-          if (typeRes && typeRes.length > 0) {
-             tmdbFormatted = typeRes.map((item: any) => {
-                const formatted = formatTmdbToCard({...item, media_type: (typeStr === 'anime' || typeStr === 'series') ? 'tv' : typeStr});
-                return {
-                   id: `tmdb-${item.id}`,
-                   title: formatted.title,
-                   href: `/tmdb/${formatted.type}/${item.id}`,
-                   imageUrl: formatted.imageUrl,
-                   type: formatted.type,
-                   slug: ''
-                };
-             });
-          }
-        } else {
-          // If no specific query, type, or genre, fetch general trending from TMDB
-          const { fetchFromTmdb, formatTmdbToCard } = await import('@/lib/tmdb-service');
-          const data = await fetchFromTmdb('/trending/all/day', { page: String(page) });
-          const typeRes = data?.results || [];
-          if (typeRes.length < 20) setHasMore(false);
-          if (typeRes && typeRes.length > 0) {
-             tmdbFormatted = typeRes
-               .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
-               .map((item: any) => {
-                  return formatTmdbToCard(item);
-             });
+          if (page === 1) {
+            setResults(newResults);
+          } else {
+            setResults(prev => [...prev, ...newResults]);
           }
         }
-
-        if (page === 1) {
-          const allResults = [...fbFiltered, ...tmdbFormatted];
-          const unique = Array.from(new Map(allResults.map(item => [item.id, item])).values());
-          setResults(unique);
-        } else {
-          setResults(prev => {
-            const allResults = [...prev, ...tmdbFormatted];
-            const unique = Array.from(new Map(allResults.map(item => [item.id, item])).values());
-            return unique;
-          });
-        }
-        
       } catch (error) {
         console.error("Search error: ", error);
         setHasMore(false);

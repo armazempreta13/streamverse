@@ -25,6 +25,9 @@ export function Navbar() {
   const typeParam = searchParams.get('type');
   const [searchQuery, setSearchQuery] = useState(currentQuery);
   const [genres, setGenres] = useState<{id: number, name: string}[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -36,6 +39,30 @@ export function Navbar() {
       getGenres('movie').then(data => setGenres(data.slice(0, 10)));
     });
   }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim().length > 2) {
+      const delayDebounce = setTimeout(async () => {
+        setIsSearching(true);
+        setShowSuggestions(true);
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`);
+          const data = await res.json();
+          if (data.success) {
+            setSuggestions(data.results.slice(0, 6));
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300);
+      return () => clearTimeout(delayDebounce);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchQuery]);
 
   useEffect(() => {
     if (pathname === '/') {
@@ -120,18 +147,79 @@ export function Navbar() {
       {/* Right Actions */}
       <div className="ml-auto flex items-center gap-4 sm:gap-6 w-auto md:w-[300px] justify-end">
         {/* Search Bar - hidden on small screens, click icon to open instead? for now keep it responsive */}
-        <div className="relative group hidden sm:block">
+        <div className="relative group hidden sm:block" onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}>
           <div className="flex items-center bg-[#0A0A16]/80 backdrop-blur-md border border-white/10 hover:border-white/20 transition-colors rounded-full px-4 py-2 w-48 lg:w-64 focus-within:border-[#8F44FF] focus-within:shadow-[0_0_15px_rgba(143,68,255,0.2)]">
-            <Search className="size-[15px] text-[#8A93A6] mr-2" />
+            <Search className={clsx("size-[15px] text-[#8A93A6] mr-2", isSearching && "animate-pulse")} />
             <input
               type="text"
               value={searchQuery}
+              onFocus={() => searchQuery.trim().length > 2 && setShowSuggestions(true)}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearch}
               placeholder="Buscar..."
               className="bg-transparent border-none outline-none text-[13px] text-white w-full placeholder:text-[#8A93A6] font-medium"
             />
           </div>
+
+          {/* Search Suggestions Popover */}
+          {showSuggestions && (suggestions.length > 0 || isSearching) && (
+            <div className="absolute top-full mt-2 w-80 right-0 bg-[#0A0A16]/95 backdrop-blur-xl border border-white/10 rounded-[20px] shadow-[0_30px_60px_rgba(0,0,0,0.8)] overflow-hidden z-[300] animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="p-2">
+                {isSearching && suggestions.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <div className="w-6 h-6 rounded-full border-2 border-[#8F44FF] border-t-transparent animate-spin mx-auto mb-3" />
+                    <p className="text-[12px] text-[#8A93A6]">Buscando...</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="px-4 py-2 text-[11px] font-bold text-[#8A93A6] uppercase tracking-widest border-b border-white/5 mb-2">
+                      Sugestões
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {suggestions.map((item) => (
+                        <Link 
+                          key={item.id}
+                          href={item.href}
+                          onClick={() => setShowSuggestions(false)}
+                          className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-colors group"
+                        >
+                          <div className="w-12 h-16 relative rounded-lg overflow-hidden shrink-0 border border-white/5">
+                            <Image 
+                              src={item.imageUrl} 
+                              alt={item.title} 
+                              fill 
+                              className="object-cover group-hover:scale-110 transition-transform duration-500" 
+                              unoptimized
+                            />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[13px] font-bold text-white truncate group-hover:text-[#A661FF] transition-colors">{item.title}</span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-[#8A93A6] font-bold uppercase tracking-wider">
+                                {item.type === 'movie' ? 'Filme' : 'Série'}
+                              </span>
+                              {item.score && (
+                                <span className="text-[10px] text-[#A661FF] font-bold">★ {item.score}</span>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                        setShowSuggestions(false);
+                      }}
+                      className="w-full mt-2 p-3 text-center text-[12px] font-bold text-[#A661FF] hover:bg-[#8F44FF]/10 transition-colors border-t border-white/5"
+                    >
+                      Ver todos os resultados
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <button className="sm:hidden text-[#8A93A6] hover:text-white relative transition-colors">
             <Search className="size-[20px]" />
