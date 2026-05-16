@@ -35,7 +35,7 @@ export default function MoviesPage() {
             <ContinueWatching />
           </div>
 
-          <div className="mt-2 space-y-0 relative z-10">
+          <div className="mt-8 space-y-8 relative z-10 pb-16">
             {/* 1. Filmes em Alta */}
             <TmdbCarousel 
               title="Filmes em Alta" 

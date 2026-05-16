@@ -8,6 +8,15 @@ export const siteConfig = {
     showAnimesOnHome: true, // Se deve incluir carrosséis de anime na página inicial
     premiumHomeLayout: true, // Ativa a estrutura ideal de catálogo (mistura Netflix/Prime/Crunchyroll)
     catalogSync: true, // Ativa o sistema de sincronização automática com TMDB (CatalogSyncService)
+    securityGuard: true, // Ativa o sistema de segurança multicamadas (fingerprint, detecção de bots)
+  },
+  security: {
+    rateLimitApiPerMinute: 60,   // Máx requests por minuto em rotas /api/*
+    rateLimitPagePerMinute: 120, // Máx requests por minuto em páginas
+    shadowThrottleMs: 2000,      // Delay artificial para clientes suspeitos (ms)
+    blockBadBots: true,          // Bloquear bots maliciosos conhecidos
+    wafEnabled: true,            // Ativar WAF (SQL injection, XSS, path traversal)
+    cspEnabled: true,            // Ativar Content Security Policy
   },
   hero: {
     // Defina os nomes dos filmes/séries que você quer exibir na Hero.

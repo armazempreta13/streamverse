@@ -50,7 +50,7 @@ export default function Home() {
             <ContinueWatching />
           </div>
 
-          <div className="mt-2 space-y-0 relative z-10">
+          <div className="mt-8 space-y-8 relative z-10 pb-16">
             {siteConfig.features.premiumHomeLayout ? (
               <>
                 {/* 2. Em Alta Agora */}
@@ -76,18 +76,18 @@ export default function Home() {
                 {/* 8. Episódios Novos */}
                 <TmdbCarousel title="Episódios Novos" endpoint="recent_series" cardStyle="media" seeAllHref="/search?type=tv&sort=recent" badge="EP NOVO" />
                 {/* 9. Ação */}
-                <TmdbCarousel title="Ação Explosiva 💥" endpoint="action_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=28" />
+                <TmdbCarousel title="Ação Explosiva" endpoint="action_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=28" />
                 {/* 10. Terror */}
-                <TmdbCarousel title="Terror em Alta 🎃" endpoint="horror_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=27" />
+                <TmdbCarousel title="Terror em Alta" endpoint="horror_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=27" />
                 {/* 11. Ficção Científica */}
-                <TmdbCarousel title="Ficção Científica 🚀" endpoint="scifi_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=878" />
+                <TmdbCarousel title="Ficção Científica" endpoint="scifi_movies" cardStyle="media" seeAllHref="/search?type=movie&genre=878" />
                 {/* 12. Séries para Maratonar */}
                 <TmdbCarousel title="Séries para Maratonar" endpoint="drama_series" cardStyle="media" seeAllHref="/search?type=tv&genre=18" />
                 {/* 13. Melhores Avaliados */}
-                <TmdbCarousel title="Mais Bem Avaliados ⭐" endpoint="top_rated_movies" cardStyle="trending" seeAllHref="/search?type=movie&sort=top_rated" />
+                <TmdbCarousel title="Mais Bem Avaliados" endpoint="top_rated_movies" cardStyle="trending" seeAllHref="/search?type=movie&sort=top_rated" />
                 {/* 14. Top Animes */}
                 {siteConfig.features.showAnimesOnHome && (
-                  <TmdbCarousel title="Top Animes de Todos os Tempos 🏆" endpoint="top_anime" cardStyle="trending" seeAllHref="/animes" theme="anime" />
+                  <TmdbCarousel title="Top Animes de Todos os Tempos" endpoint="top_anime" cardStyle="trending" seeAllHref="/animes" theme="anime" />
                 )}
               </>
             ) : (

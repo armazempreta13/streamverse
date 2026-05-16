@@ -11,6 +11,7 @@ const cinzel = Cinzel({ subsets: ['latin'], variable: '--font-cinzel' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 import { ClientProviders } from '@/components/ClientProviders';
+import { SecurityGuard } from '@/components/SecurityGuard';
 
 export const metadata: Metadata = {
   title: 'StreamVerse - Filmes, Séries e Animes Online em HD',
@@ -34,6 +35,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <ClientProviders>
           {children}
           <GlobalAmbilight />
+          <SecurityGuard />
         </ClientProviders>
       </body>
     </html>

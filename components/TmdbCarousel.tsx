@@ -54,16 +54,17 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
         else if (endpoint === 'thriller_series') results = await getByGenre('tv', GENRE.thriller);
 
         if (results && results.length > 0) {
-            const seenKey = `seen_ids_${window.location.pathname}`;
-            if (!window[seenKey as any]) (window as any)[seenKey] = new Set();
-            const seenIds = (window as any)[seenKey] as Set<string | number>;
+            // Remove duplicates within the same carousel just in case
+            const uniqueMap = new Map();
+            results.forEach(item => {
+              if (!uniqueMap.has(item.id)) {
+                uniqueMap.set(item.id, item);
+              }
+            });
+            const uniqueResults = Array.from(uniqueMap.values());
 
-            const uniqueResults = results.filter(r => !seenIds.has(r.id));
-            const finalResults = uniqueResults.length >= 4 ? uniqueResults : results;
-
-            const formatted = finalResults.slice(0, 20).map((item: any, index: number) => {
+            const formatted = uniqueResults.slice(0, 20).map((item: any, index: number) => {
               const base = formatTmdbToCard(item);
-              seenIds.add(item.id);
               return { ...base, rank: index + 1 };
             });
             setData(formatted);

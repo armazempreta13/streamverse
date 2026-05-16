@@ -73,11 +73,11 @@ function getAdminDb() {
   if (!serviceAccountStr) throw new Error('FIREBASE_ADMIN_SERVICE_ACCOUNT not set');
   
   let adminApp: App;
-  if (!getApps().find(a => a.name === 'admin-sync')) {
+  if (!getApps().find((a: any) => a.name === 'admin-sync')) {
     const serviceAccount = JSON.parse(serviceAccountStr);
     adminApp = initializeApp({ credential: cert(serviceAccount) }, 'admin-sync');
   } else {
-    adminApp = getApps().find(a => a.name === 'admin-sync')!;
+    adminApp = getApps().find((a: any) => a.name === 'admin-sync')!;
   }
   return getFirestore(adminApp);
 }
@@ -157,7 +157,7 @@ function buildCatalogItem(
 
 // ─── Logger ────────────────────────────────────────────────────────────────
 
-async function writeLog(db: FirebaseFirestore.Firestore, log: Omit<SyncLog, 'createdAt'>) {
+async function writeLog(db: any, log: Omit<SyncLog, 'createdAt'>) {
   try {
     await db.collection('sync_logs').add({ ...log, createdAt: new Date().toISOString() });
   } catch {}
@@ -166,7 +166,7 @@ async function writeLog(db: FirebaseFirestore.Firestore, log: Omit<SyncLog, 'cre
 // ─── Upsert helper ─────────────────────────────────────────────────────────
 
 async function upsertItem(
-  db: FirebaseFirestore.Firestore,
+  db: any,
   item: CatalogItem
 ): Promise<'created' | 'updated' | 'skipped'> {
   const col = db.collection('tmdb_catalog');
@@ -334,7 +334,7 @@ export async function getSyncStatus(): Promise<SyncStatus & { totalItems: number
 export async function getSyncLogs(limit = 50): Promise<SyncLog[]> {
   const db = getAdminDb();
   const snap = await db.collection('sync_logs').orderBy('createdAt', 'desc').limit(limit).get();
-  return snap.docs.map(d => d.data() as SyncLog);
+  return snap.docs.map((d: any) => d.data() as SyncLog);
 }
 
 // ─── Pause / Resume ────────────────────────────────────────────────────────
@@ -354,7 +354,7 @@ export async function getCatalogItems(filters: {
   limit?: number;
 } = {}): Promise<CatalogItem[]> {
   const db = getAdminDb();
-  let q: FirebaseFirestore.Query = db.collection('tmdb_catalog');
+  let q: any = db.collection('tmdb_catalog');
 
   if (filters.type) q = q.where('type', '==', filters.type);
   if (filters.isTrending) q = q.where('isTrending', '==', true);
@@ -363,5 +363,5 @@ export async function getCatalogItems(filters: {
 
   q = q.orderBy('rankingScore', 'desc').limit(filters.limit || 20);
   const snap = await q.get();
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as CatalogItem));
+  return snap.docs.map((d: any) => ({ id: d.id, ...d.data() } as CatalogItem));
 }

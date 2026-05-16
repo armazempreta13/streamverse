@@ -131,7 +131,7 @@ export function StandardAnimePage() {
         {/* Decorative horizontal divider — Japanese style */}
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 flex items-center gap-4">
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF3366]/20 to-transparent" />
-          <span className="text-[#FF3366]/30 text-lg font-bold">⛩</span>
+          <span className="text-[#FF3366]/30 text-lg font-bold select-none">•</span>
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF3366]/20 to-transparent" />
         </div>
 
@@ -142,7 +142,7 @@ export function StandardAnimePage() {
             <span className="text-[9px] tracking-[0.35em] text-[#8F44FF]/60 font-bold uppercase">トレンド · Trending</span>
           </div>
           <TmdbCarousel 
-            title="TOP 10 EM ALTA 🔥 炎" 
+            title="TOP 10 EM ALTA" 
             endpoint="anime" 
             cardStyle="trending" 
             seeAllHref="/search?type=anime"

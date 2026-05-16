@@ -24,7 +24,7 @@ export function PremiumAnimePage() {
           <ContinueWatching theme="anime" />
         </div>
 
-        <div className="mt-8 relative z-10">
+        <div className="mt-8 space-y-8 relative z-10 pb-16">
 
           {/* 1. Novos Episódios */}
           <div className="relative">
@@ -56,7 +56,7 @@ export function PremiumAnimePage() {
           {!siteConfig.features.crunchyrollStyleLayout && (
             <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 flex items-center gap-4 py-6 md:py-8">
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF3366]/15 to-transparent" />
-              <span className="text-[#FF3366]/20 text-lg">⛩</span>
+              <span className="text-[#FF3366]/20 text-lg font-bold select-none">•</span>
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF3366]/15 to-transparent" />
             </div>
           )}
@@ -79,7 +79,7 @@ export function PremiumAnimePage() {
               )}
             </div>
             <TmdbCarousel 
-              title={siteConfig.features.crunchyrollStyleLayout ? "" : "EM ALTA NO JAPÃO 🔥"} 
+              title={siteConfig.features.crunchyrollStyleLayout ? "" : "EM ALTA NO JAPÃO"} 
               endpoint="anime" 
               cardStyle="trending" 
               seeAllHref="/search?type=anime"

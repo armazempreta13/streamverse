@@ -181,7 +181,7 @@ export default function SyncAdminPage() {
               <span className="text-xs text-white/40 uppercase tracking-wider">Status</span>
             </div>
             <p className="text-lg font-bold">
-              {status?.isRunning ? '🔄 Executando' : status?.isPaused ? '⏸ Pausado' : '✅ Pronto'}
+              {status?.isRunning ? 'Executando' : status?.isPaused ? 'Pausado' : 'Pronto'}
             </p>
             <p className="text-xs text-white/30 mt-1">estado atual</p>
           </div>

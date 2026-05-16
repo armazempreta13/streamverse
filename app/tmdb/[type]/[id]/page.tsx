@@ -98,7 +98,9 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
           </div>
           
           <h1 className="text-3xl md:text-4xl font-black mb-4 flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm" style={{ backgroundColor: themeColor, boxShadow: `0 0 15px ${themeGlow}` }}>★</div>
+             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: themeColor, boxShadow: `0 0 15px ${themeGlow}` }}>
+               <Star className="size-4 fill-current" />
+             </div>
              {title}
           </h1>
 
