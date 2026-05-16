@@ -261,7 +261,7 @@ export function Navbar() {
         </button>
 
         {/* User Profile / Auth */}
-        {user ? (
+        {user && (
           <div className="relative group/menu flex items-center gap-2 cursor-pointer transition-transform hover:scale-105">
             <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/10 group-hover/menu:border-[#8F44FF] relative transition-colors">
               <Image
@@ -289,13 +289,6 @@ export function Navbar() {
               </button>
             </div>
           </div>
-        ) : (
-          <button 
-            onClick={signIn}
-            className="text-[13px] font-bold bg-[#8F44FF] hover:bg-[#A661FF] text-white px-5 py-2 rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(143,68,255,0.3)]"
-          >
-            Entrar
-          </button>
         )}
       </div>
     </header>

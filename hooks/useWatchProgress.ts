@@ -30,6 +30,7 @@ export function useWatchProgress({
   contentImage: string;
   durationStr?: string;
   isMovie: boolean;
+  isActive?: boolean;
 }) {
   const { user } = useAuth();
   const [watchedSeconds, setWatchedSeconds] = useState(0);
@@ -68,7 +69,7 @@ export function useWatchProgress({
 
   // 2. Increment timer
   useEffect(() => {
-    if (!user || !contentSlug) return;
+    if (!user || !contentSlug || isActive === false) return;
     
     const interval = setInterval(() => {
       setWatchedSeconds((prev) => {
@@ -78,7 +79,7 @@ export function useWatchProgress({
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [user, contentSlug, totalSeconds]);
+  }, [user, contentSlug, totalSeconds, isActive]);
   
   // 3. Save to Firestore every 10 seconds watched
   useEffect(() => {

@@ -11,7 +11,7 @@ if (!getApps().length) {
   app = getApp();
 }
 
-export const db = getFirestore(app);
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
 
 // Lazy initialization of auth to prevent SSR errors
 let authInstance: any = null;

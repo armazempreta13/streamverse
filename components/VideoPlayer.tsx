@@ -12,9 +12,10 @@ interface VideoPlayerProps {
   posterUrl: string;
   videoUrl: string;
   backdropUrl?: string;
+  theme?: 'default' | 'anime';
 }
 
-export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl }: VideoPlayerProps) {
+export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl, theme = 'default' }: VideoPlayerProps) {
   const [hasStarted, setHasStarted] = useState(false);
 
   return (
@@ -33,7 +34,9 @@ export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl 
             {/* Play Button Overlay */}
             <button 
               onClick={() => setHasStarted(true)}
-              className="relative z-30 w-20 h-20 rounded-full bg-[#8F44FF] flex items-center justify-center text-white shadow-[0_0_50px_rgba(143,68,255,0.6)] hover:scale-110 active:scale-95 transition-all group/btn"
+              className={`relative z-30 w-20 h-20 rounded-full flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all group/btn ${
+                theme === 'anime' ? 'bg-[#FF3366] shadow-[0_0_50px_rgba(255,51,102,0.6)]' : 'bg-[#8F44FF] shadow-[0_0_50px_rgba(143,68,255,0.6)]'
+              }`}
             >
               <Play className="size-8 fill-white ml-1 group-hover/btn:scale-110 transition-transform" />
               <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-ping opacity-20" />
@@ -41,7 +44,7 @@ export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl 
 
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
                <p className="text-white font-black text-xl tracking-tighter uppercase drop-shadow-lg">Clique para assistir</p>
-               <div className="w-12 h-1 bg-[#8F44FF] rounded-full" />
+               <div className={`w-12 h-1 rounded-full ${theme === 'anime' ? 'bg-[#FF3366]' : 'bg-[#8F44FF]'}`} />
             </div>
           </div>
         ) : (
@@ -51,6 +54,7 @@ export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl 
               src={videoUrl}
               className="w-full h-full border-none relative z-10"
               allowFullScreen
+              allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
             />
           </>
         )}
@@ -58,9 +62,9 @@ export function VideoPlayer({ id, type, title, posterUrl, videoUrl, backdropUrl 
       
       {/* Context Actions / Notice under player */}
       <div className="bg-[#131520] border border-white/5 px-6 py-4 rounded-xl mt-4 flex items-center gap-4">
-        <Info className="size-5 text-[#8F44FF] shrink-0" />
+        <Info className={`size-5 shrink-0 ${theme === 'anime' ? 'text-[#FF3366]' : 'text-[#8F44FF]'}`} />
         <p className="text-sm text-[#8A93A6]">
-          <strong className="text-white">DICA PREMIUM:</strong> Ao iniciar o player, o progresso será salvo automaticamente em seu <span className="text-[#A661FF]">Continuar Assistindo</span>.
+          <strong className="text-white">DICA PREMIUM:</strong> Ao iniciar o player, o progresso será salvo automaticamente em seu <span className={theme === 'anime' ? 'text-[#FF3366]' : 'text-[#A661FF]'}>Continuar Assistindo</span>.
         </p>
       </div>
     </div>

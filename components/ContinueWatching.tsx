@@ -8,7 +8,11 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore/l
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 
-export function ContinueWatching() {
+interface ContinueWatchingProps {
+  theme?: 'default' | 'anime';
+}
+
+export function ContinueWatching({ theme = 'default' }: ContinueWatchingProps = {}) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [dataList, setDataList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,21 +107,25 @@ export function ContinueWatching() {
         <h3 className="text-[20px] font-display font-bold text-white/90 tracking-wide">
           Continue Assistindo
         </h3>
-        <ChevronRight className="size-4 text-[#8F44FF] opacity-70" />
+        <ChevronRight className={`size-4 opacity-70 ${theme === 'anime' ? 'text-[#FF3366]' : 'text-[#8F44FF]'}`} />
       </div>
 
       <div className="relative border border-transparent">
         {/* Navigation Buttons */}
         <button 
           onClick={scrollLeft}
-          className="absolute left-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:bg-[#8F44FF] hover:border-[#8F44FF] hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+          className={`absolute left-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${
+            theme === 'anime' ? 'hover:bg-[#FF3366] hover:border-[#FF3366]' : 'hover:bg-[#8F44FF] hover:border-[#8F44FF]'
+          }`}
         >
           <ChevronLeft className="size-6 ml-[-2px]" />
         </button>
         
         <button 
           onClick={scrollRight}
-          className="absolute right-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:bg-[#8F44FF] hover:border-[#8F44FF] hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+          className={`absolute right-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${
+            theme === 'anime' ? 'hover:bg-[#FF3366] hover:border-[#FF3366]' : 'hover:bg-[#8F44FF] hover:border-[#8F44FF]'
+          }`}
         >
           <ChevronRight className="size-6 mr-[-2px]" />
         </button>
@@ -164,7 +172,7 @@ export function ContinueWatching() {
                   {item.progress !== undefined && (
                     <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/10 z-20">
                       <div
-                        className="h-full bg-[#8F44FF] shadow-[0_0_8px_#8F44FF]"
+                        className={`h-full ${theme === 'anime' ? 'bg-[#FF3366] shadow-[0_0_8px_#FF3366]' : 'bg-[#8F44FF] shadow-[0_0_8px_#8F44FF]'}`}
                         style={{ width: `${item.progress || 8}%` }}
                       />
                     </div>
@@ -173,7 +181,9 @@ export function ContinueWatching() {
 
                 {/* Info Area (Fundo mais claro que a página) */}
                 <div className="p-4 bg-[#0F0F1E]/80 backdrop-blur-md">
-                   <h3 className="text-white text-[13px] font-bold tracking-wide truncate group-hover:text-[#A661FF] transition-colors mb-1">
+                   <h3 className={`text-white text-[13px] font-bold tracking-wide truncate transition-colors mb-1 ${
+                     theme === 'anime' ? 'group-hover:text-[#FF3366]' : 'group-hover:text-[#A661FF]'
+                   }`}>
                      {item.title}
                    </h3>
                    <div className="flex items-center justify-between">

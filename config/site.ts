@@ -4,6 +4,7 @@ export const siteConfig = {
     heroGlow: false, // Liga/Desliga o feixe de luz roxa sob a caixa do IMDb
     dynamicHeroTypography: true, // Liga/Desliga o sistema dinâmico de fontes para a Hero
     otakuPremium: true, // Liga/Desliga a atmosfera premium japonesa na aba Animes
+    crunchyrollStyleLayout: false, // Ativa o design de grid e botões idêntico à referência Crunchyroll/Anime
     showAnimesOnHome: true, // Se deve incluir carrosséis de anime na página inicial
     premiumHomeLayout: true, // Ativa a estrutura ideal de catálogo (mistura Netflix/Prime/Crunchyroll)
   },

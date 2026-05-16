@@ -12,9 +12,10 @@ interface TmdbCarouselProps {
   cardStyle?: 'trending' | 'media';
   seeAllHref?: string;
   badge?: string;
+  theme?: 'default' | 'anime';
 }
 
-export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref, badge }: TmdbCarouselProps) {
+export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref, badge, theme = 'default' }: TmdbCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -115,13 +116,19 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
         <div className="flex items-center gap-3">
            <h3 className="text-[24px] font-display font-bold text-white tracking-wide">{title}</h3>
            {badge && (
-             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-[#8F44FF]/20 text-[#A661FF] border border-[#8F44FF]/30">
+             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${
+               theme === 'anime' 
+                 ? 'bg-[#FF3366]/20 text-[#FF3366] border-[#FF3366]/30' 
+                 : 'bg-[#8F44FF]/20 text-[#A661FF] border-[#8F44FF]/30'
+             }`}>
                {badge}
              </span>
            )}
         </div>
         {seeAllHref && (
-           <Link href={seeAllHref} className="text-[13px] font-bold text-[#A661FF] hover:text-[#7B2EFF] transition-colors uppercase tracking-widest flex items-center gap-1 group">
+           <Link href={seeAllHref} className={`text-[13px] font-bold transition-colors uppercase tracking-widest flex items-center gap-1 group ${
+             theme === 'anime' ? 'text-[#FF3366] hover:text-[#FF6699]' : 'text-[#A661FF] hover:text-[#7B2EFF]'
+           }`}>
               Ver Todos
               <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
            </Link>
@@ -131,14 +138,18 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
       <div className="relative border border-transparent">
         <button 
           onClick={scrollLeft}
-          className="absolute left-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:bg-[#8F44FF] hover:border-[#8F44FF] hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+          className={`absolute left-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${
+            theme === 'anime' ? 'hover:bg-[#FF3366] hover:border-[#FF3366]' : 'hover:bg-[#8F44FF] hover:border-[#8F44FF]'
+          }`}
         >
           <ChevronLeft className="size-6 ml-[-2px]" />
         </button>
         
         <button 
           onClick={scrollRight}
-          className="absolute right-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:bg-[#8F44FF] hover:border-[#8F44FF] hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+          className={`absolute right-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${
+            theme === 'anime' ? 'hover:bg-[#FF3366] hover:border-[#FF3366]' : 'hover:bg-[#8F44FF] hover:border-[#8F44FF]'
+          }`}
         >
           <ChevronRight className="size-6 mr-[-2px]" />
         </button>
@@ -159,6 +170,7 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
                       imageUrl={item.posterUrl || item.imageUrl} 
                       slug={item.slug} 
                       href={href}
+                      theme={theme}
                     />
                   ) : (
                     <MediaCard 
@@ -167,6 +179,7 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
                       imageUrl={item.backdropUrl || item.imageUrl}
                       slug={item.slug}
                       href={href}
+                      theme={theme}
                     />
                   )}
               </div>

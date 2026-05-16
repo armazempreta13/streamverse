@@ -8,6 +8,8 @@ import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore/lite';
 import { db } from '@/lib/firebase';
 import { useWatchProgress } from '@/hooks/useWatchProgress';
+import { CommentSection } from '@/components/CommentSection';
+import { OtakuAtmosphere } from '@/components/OtakuAtmosphere';
 
 function PlayerContent({ slug }: { slug: string }) {
   const router = useRouter();
@@ -67,8 +69,16 @@ function PlayerContent({ slug }: { slug: string }) {
     contentTitle: content?.title || '',
     contentImage: content?.heroImage || '',
     durationStr,
-    isMovie
+    isMovie,
+    isActive: hasClickedPlay
   });
+
+  const isAnimeContent = content?.type === 'anime' || 
+                         (content?.categories && Array.isArray(content.categories) && content.categories.some((c: string) => c.toLowerCase() === 'anime')) || 
+                         content?.genres?.toLowerCase().includes('anime');
+
+  const themeColor = isAnimeContent ? '#FF3366' : '#8F44FF';
+  const themeGlow = isAnimeContent ? 'rgba(255,51,102,0.4)' : 'rgba(143,68,255,0.4)';
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -112,7 +122,7 @@ function PlayerContent({ slug }: { slug: string }) {
      return (
        <div className="min-h-screen bg-[#050510] text-[#D1D5DB] flex items-center justify-center">
          <div className="animate-pulse flex flex-col items-center">
-           <div className="w-12 h-12 rounded-full border-4 border-[#8F44FF] border-t-transparent animate-spin mb-4"></div>
+           <div className={`w-12 h-12 rounded-full border-4 border-t-transparent animate-spin mb-4 ${isAnimeContent ? 'border-[#FF3366]' : 'border-[#8F44FF]'}`}></div>
            <p className="text-[#8A93A6] font-medium">Carregando player...</p>
          </div>
        </div>
@@ -145,7 +155,9 @@ function PlayerContent({ slug }: { slug: string }) {
   };
 
   return (
-    <main className="min-h-screen bg-[#050510] text-[#D1D5DB] overflow-y-auto font-sans relative">
+    <main className="min-h-screen bg-[#050510] text-[#D1D5DB] overflow-y-auto font-sans relative overflow-x-hidden">
+       {isAnimeContent && <OtakuAtmosphere />}
+       
        {/* Ambient Backgound Image */}
        <div className="absolute top-0 left-0 w-full h-[600px] z-0 opacity-20 pointer-events-none mix-blend-screen">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050510]/80 to-[#050510] z-10" />
@@ -183,13 +195,13 @@ function PlayerContent({ slug }: { slug: string }) {
                  <div className="flex items-center gap-3 shrink-0">
                    <Link 
                      href={`/watch/${content.slug}?player=1${!isMovie ? `&ep=${epNum}` : ''}`}
-                     className={`px-6 py-2.5 rounded-full text-[13px] font-bold transition-all ${playerParam === '1' ? 'bg-[#8F44FF] text-white shadow-[0_0_15px_rgba(143,68,255,0.4)]' : 'bg-white/5 text-[#8A93A6] hover:bg-white/10 hover:text-white'}`}
+                     className={`px-6 py-2.5 rounded-full text-[13px] font-bold transition-all ${playerParam === '1' ? (isAnimeContent ? 'bg-[#FF3366] text-white shadow-[0_0_15px_rgba(255,51,102,0.4)]' : 'bg-[#8F44FF] text-white shadow-[0_0_15px_rgba(143,68,255,0.4)]') : 'bg-white/5 text-[#8A93A6] hover:bg-white/10 hover:text-white'}`}
                    >
                      PLAYER FHD
                    </Link>
                    <Link 
                      href={`/watch/${content.slug}?player=2${!isMovie ? `&ep=${epNum}` : ''}`}
-                     className={`px-6 py-2.5 rounded-full text-[13px] font-bold transition-all ${playerParam === '2' ? 'bg-[#8F44FF] text-white shadow-[0_0_15px_rgba(143,68,255,0.4)]' : 'bg-white/5 text-[#8A93A6] hover:bg-white/10 hover:text-white'}`}
+                     className={`px-6 py-2.5 rounded-full text-[13px] font-bold transition-all ${playerParam === '2' ? (isAnimeContent ? 'bg-[#FF3366] text-white shadow-[0_0_15px_rgba(255,51,102,0.4)]' : 'bg-[#8F44FF] text-white shadow-[0_0_15px_rgba(143,68,255,0.4)]') : 'bg-white/5 text-[#8A93A6] hover:bg-white/10 hover:text-white'}`}
                    >
                      PLAYER 2
                    </Link>
@@ -221,14 +233,18 @@ function PlayerContent({ slug }: { slug: string }) {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none mix-blend-multiply" />
                       
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full flex items-center justify-center z-10 shadow-[0_0_40px_rgba(0,0,0,0.5)] group-hover/play:scale-110 group-hover/play:bg-[#8F44FF] group-hover/play:border-[#8F44FF] group-hover/play:shadow-[0_0_60px_rgba(143,68,255,0.6)] transition-all duration-500 relative">
+                      <div className={`w-20 h-20 sm:w-24 sm:h-24 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full flex items-center justify-center z-10 shadow-[0_0_40px_rgba(0,0,0,0.5)] group-hover/play:scale-110 transition-all duration-500 relative ${
+                        isAnimeContent 
+                          ? 'group-hover/play:bg-[#FF3366] group-hover/play:border-[#FF3366] group-hover/play:shadow-[0_0_60px_rgba(255,51,102,0.6)]' 
+                          : 'group-hover/play:bg-[#8F44FF] group-hover/play:border-[#8F44FF] group-hover/play:shadow-[0_0_60px_rgba(143,68,255,0.6)]'
+                      }`}>
                         <Play className="size-10 sm:size-12 fill-current ml-2" />
                       </div>
                       
                       {/* Fake Controls */}
                       <div className="absolute bottom-0 inset-x-0 p-4 sm:px-8 sm:py-6 flex flex-col gap-4 opacity-50 relative z-10 pointer-events-none bg-gradient-to-t from-black to-transparent">
                           <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
-                             <div className="w-0 h-full bg-[#8F44FF]" />
+                             <div className={`w-0 h-full ${isAnimeContent ? 'bg-[#FF3366]' : 'bg-[#8F44FF]'}`} />
                           </div>
                       </div>
                     </div>
@@ -283,16 +299,14 @@ function PlayerContent({ slug }: { slug: string }) {
             </div>
 
             {/* Comments Section */}
-            <div className="mt-8 pt-6">
-              <div className="flex items-center gap-3 text-white font-display font-bold text-[24px] mb-6 tracking-wide">
-                 <div className="w-10 h-10 rounded-full bg-[#8F44FF]/20 flex items-center justify-center">
-                    <MessageSquare className="size-5 fill-current text-[#A661FF]" />
+            <div className="mt-12 pt-8 border-t border-white/5">
+              <div className="flex items-center gap-3 text-white font-display font-bold text-[24px] mb-8 tracking-wide">
+                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${themeColor}33`, boxShadow: `0 0 15px ${themeColor}33` }}>
+                    <MessageSquare className="size-5 fill-current" style={{ color: themeColor }} />
                  </div>
                  COMENTÁRIOS
               </div>
-              <div className="bg-[#0A0A16] p-10 rounded-[24px] border border-white/5 flex flex-col items-center justify-center text-center">
-                 <p className="text-[#8A93A6] text-[16px] font-medium">Seção de comentários indisponível no momento.</p>
-              </div>
+              <CommentSection contentId={slug} theme={isAnimeContent ? 'anime' : 'default'} />
             </div>
 
          </div>
@@ -327,7 +341,9 @@ function PlayerContent({ slug }: { slug: string }) {
                       value={searchEp}
                       onChange={(e) => setSearchEp(e.target.value)}
                       placeholder="Número do EP (ex: 5) + ENTER"
-                      className="w-full bg-[#0A0A16] border border-white/10 rounded-[12px] text-white text-[14px] font-medium placeholder-[#666B7D] outline-none pl-5 pr-12 py-3.5 focus:border-[#8F44FF]/50 transition-colors"
+                      className={`w-full bg-[#0A0A16] border border-white/10 rounded-[12px] text-white text-[14px] font-medium placeholder-[#666B7D] outline-none pl-5 pr-12 py-3.5 transition-colors ${
+                        isAnimeContent ? 'focus:border-[#FF3366]/50' : 'focus:border-[#8F44FF]/50'
+                      }`}
                     />
                     <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-[#666B7D] hover:text-white transition-colors p-1">
                       <Search className="size-4.5" />
@@ -345,16 +361,16 @@ function PlayerContent({ slug }: { slug: string }) {
                        <Link 
                          key={ep.id}
                          href={`/watch/${content.slug}?player=${playerParam}&season=${activeSeason}&ep=${ep.number}`}
-                         className={`flex items-center px-5 py-4 mb-2 rounded-[12px] transition-all group ${isActive ? 'bg-[#8F44FF]/10 border border-[#8F44FF]/30' : 'hover:bg-white/5 border border-transparent'}`}
+                         className={`flex items-center px-5 py-4 mb-2 rounded-[12px] transition-all group ${isActive ? (isAnimeContent ? 'bg-[#FF3366]/10 border border-[#FF3366]/30' : 'bg-[#8F44FF]/10 border border-[#8F44FF]/30') : 'hover:bg-white/5 border border-transparent'}`}
                        >
-                         <span className={`text-[18px] font-display font-bold w-12 shrink-0 ${isActive ? 'text-[#A661FF]' : 'text-[#8A93A6] group-hover:text-white transition-colors'}`}>
+                         <span className={`text-[18px] font-display font-bold w-12 shrink-0 ${isActive ? (isAnimeContent ? 'text-[#FF3366]' : 'text-[#A661FF]') : 'text-[#8A93A6] group-hover:text-white transition-colors'}`}>
                            {ep.number.toString().padStart(2, '0')}
                          </span>
                          <span className={`text-[14px] line-clamp-2 ${isActive ? 'text-white font-bold' : 'text-[#8A93A6] font-medium group-hover:text-[#D1D5DB] transition-colors'}`}>
                            {ep.title || 'Episódio sem título'}
                          </span>
                          {isActive && (
-                            <Play className="size-4 fill-current text-[#A661FF] ml-auto shrink-0" />
+                            <Play className={`size-4 fill-current ml-auto shrink-0 ${isAnimeContent ? 'text-[#FF3366]' : 'text-[#A661FF]'}`} />
                          )}
                        </Link>
                     )
