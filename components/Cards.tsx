@@ -17,7 +17,7 @@ interface MediaCardProps {
   theme?: 'default' | 'anime';
 }
 
-export function MediaCard({ title, subtitle, imageUrl, progress, slug, href, className, theme = 'default' }: MediaCardProps) {
+export const MediaCard = React.memo(function MediaCard({ title, subtitle, imageUrl, progress, slug, href, className, theme = 'default' }: MediaCardProps) {
   return (
     <Link 
       href={href || `/content/${slug}`} 
@@ -100,7 +100,7 @@ export function MediaCard({ title, subtitle, imageUrl, progress, slug, href, cla
       </div>
     </Link>
   );
-}
+});
 
 interface TrendingCardProps {
   title: string;
@@ -111,7 +111,7 @@ interface TrendingCardProps {
   theme?: 'default' | 'anime';
 }
 
-export function TrendingCard({ title, rank, imageUrl, slug, href, theme = 'default' }: TrendingCardProps) {
+export const TrendingCard = React.memo(function TrendingCard({ title, rank, imageUrl, slug, href, theme = 'default' }: TrendingCardProps) {
   return (
     <Link 
       href={href || `/content/${slug}`} 
@@ -170,4 +170,4 @@ export function TrendingCard({ title, rank, imageUrl, slug, href, theme = 'defau
       </div>
     </Link>
   );
-}
+});

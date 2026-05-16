@@ -18,17 +18,25 @@ interface TmdbCarouselProps {
   theme?: 'default' | 'anime';
 }
 
-export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref, badge, theme = 'default' }: TmdbCarouselProps) {
+const carouselCache = new Map<string, any[]>();
+
+export const TmdbCarousel = React.memo(function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref, badge, theme = 'default' }: TmdbCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<any[]>(() => carouselCache.get(endpoint) || []);
   const [loading, setLoading] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(() => carouselCache.has(endpoint));
 
   useEffect(() => {
     if (hasLoaded) return;
 
     const fetchData = async () => {
       try {
+        if (carouselCache.has(endpoint)) {
+           setData(carouselCache.get(endpoint)!);
+           setHasLoaded(true);
+           return;
+        }
+
         setLoading(true);
         let results: any[] = [];
         if (endpoint === 'trending') results = await getTrending('all');
@@ -68,6 +76,7 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
               return { ...base, rank: index + 1 };
             });
             setData(formatted);
+            carouselCache.set(endpoint, formatted);
         }
         setHasLoaded(true);
       } catch (error) {
@@ -113,8 +122,8 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
       <section ref={scrollRef} className="relative px-6 sm:px-10 pb-10 pt-6 min-h-[300px]">
         <h3 className="text-[20px] font-display font-bold mb-4 text-white opacity-50 tracking-wide">{title}</h3>
         <div className="flex gap-4 sm:gap-6 overflow-x-hidden pb-4 pt-2 -mx-6 sm:-mx-10 px-6 sm:px-10">
-           {[...Array(4)].map((_, i) => (
-             <div key={i} className={`shrink-0 bg-[#0B1020] animate-pulse rounded-[16px] ${cardStyle === 'trending' ? 'w-[150px] sm:w-[180px] aspect-[2/3]' : 'w-[280px] sm:w-[320px] aspect-[16/10]'}`} />
+           {[...Array(5)].map((_, i) => (
+             <div key={`skeleton-${i}`} className={`shrink-0 bg-[#0B1020] animate-pulse ${cardStyle === 'trending' ? 'w-[160px] sm:w-[200px] aspect-[2/3] rounded-[20px]' : 'w-[280px] sm:w-[300px] lg:w-[320px] aspect-[16/10] rounded-[16px]'}`} />
            ))}
         </div>
       </section>
@@ -172,34 +181,31 @@ export function TmdbCarousel({ title, endpoint, cardStyle = 'media', seeAllHref,
           className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 pt-2 scrollbar-hide snap-x -mx-6 sm:-mx-10 px-6 sm:px-10"
           style={{ scrollBehavior: 'smooth' }}
         >
-          {data.map((item) => {
-            const href = `/tmdb/${item.type}/${item.id}`;
-            return (
-              <div key={item.id} className="snap-start shrink-0 cursor-pointer">
-                  {cardStyle === 'trending' ? (
-                    <TrendingCard 
-                      title={item.title} 
-                      rank={item.rank} 
-                      imageUrl={item.posterUrl || item.imageUrl} 
-                      slug={item.slug} 
-                      href={href}
-                      theme={theme}
-                    />
-                  ) : (
-                    <MediaCard 
-                      title={item.title}
-                      subtitle={item.subtitle}
-                      imageUrl={item.backdropUrl || item.imageUrl}
-                      slug={item.slug}
-                      href={href}
-                      theme={theme}
-                    />
-                  )}
-              </div>
-            );
-          })}
+          {data.map((item) => (
+            <div key={item.id} className="snap-start shrink-0 cursor-pointer">
+                {cardStyle === 'trending' ? (
+                  <TrendingCard 
+                    title={item.title} 
+                    rank={item.rank} 
+                    imageUrl={item.posterUrl || item.imageUrl} 
+                    slug={item.slug} 
+                    href={`/tmdb/${item.type}/${item.id}`}
+                    theme={theme}
+                  />
+                ) : (
+                  <MediaCard 
+                    title={item.title}
+                    subtitle={item.subtitle}
+                    imageUrl={item.backdropUrl || item.imageUrl}
+                    slug={item.slug}
+                    href={`/tmdb/${item.type}/${item.id}`}
+                    theme={theme}
+                  />
+                )}
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
-}
+});
