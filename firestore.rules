@@ -93,7 +93,7 @@ service cloud.firestore {
 
     // Comentários: qualquer pessoa pode ler e criar (sem login)
     match /comments/{commentId} {
-      allow read: if true;
+      allow read, list: if true;
       allow create: if request.resource.data.keys().hasAll(['contentId', 'userName', 'userEmail', 'text'])
                     && request.resource.data.text is string
                     && request.resource.data.text.size() > 0
