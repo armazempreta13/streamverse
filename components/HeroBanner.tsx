@@ -27,7 +27,7 @@ const BREATH_STYLE = `
 }
 `;
 
-export function HeroBanner({ category }: { category?: 'anime' } = {}) {
+export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'series' } = {}) {
   const [heroContents, setHeroContents] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
