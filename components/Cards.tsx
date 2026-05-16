@@ -32,7 +32,10 @@ export function MediaCard({ title, subtitle, imageUrl, progress, slug, href, cla
           src={imageUrl}
           alt={title}
           fill
-          className="object-cover transition-transform duration-1000 group-hover:scale-110"
+          quality={75}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 30vw, 20vw"
+          loading="lazy"
+          className="object-cover transition-transform duration-1000 group-hover:scale-110 will-change-transform"
           referrerPolicy="no-referrer"
         />
         {/* Advanced Gradient Overlays */}
@@ -123,7 +126,10 @@ export function TrendingCard({ title, rank, imageUrl, slug, href, theme = 'defau
           src={imageUrl}
           alt={title}
           fill
-          className="object-cover transition-transform duration-1000 group-hover:scale-110"
+          quality={75}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
+          loading="lazy"
+          className="object-cover transition-transform duration-1000 group-hover:scale-110 will-change-transform"
           referrerPolicy="no-referrer"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-[#050510]/40 to-transparent opacity-90 transition-opacity duration-700 group-hover:opacity-60" />

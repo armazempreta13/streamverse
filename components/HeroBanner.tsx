@@ -222,7 +222,10 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
               src={content.heroImage}
               alt={content.title}
               fill
-              className="object-cover object-[72%_top]"
+              quality={80}
+              sizes="100vw"
+              loading={idx === 0 ? "eager" : "lazy"}
+              className="object-cover object-[72%_top] will-change-transform"
               referrerPolicy="no-referrer"
               priority={idx === 0}
             />

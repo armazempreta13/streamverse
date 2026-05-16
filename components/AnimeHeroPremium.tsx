@@ -93,7 +93,10 @@ export function AnimeHeroPremium() {
                 src={`https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}`}
                 alt={item.name || item.title || ''}
                 fill
-                className="object-cover object-[center_20%] scale-105"
+                quality={80}
+                loading={idx === 0 ? "eager" : "lazy"}
+                sizes="100vw"
+                className="object-cover object-[center_20%] scale-105 will-change-transform"
                 priority={idx === 0}
               />
               {/* Ultra-Premium Overlays */}

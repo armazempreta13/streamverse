@@ -16,13 +16,14 @@ export function OtakuAtmosphere() {
           ═══════════════════════════════════════════════ */}
       <div className="absolute inset-0 z-0">
         <div 
-          className="absolute inset-[-30px] bg-cover bg-center bg-no-repeat opacity-[0.18] animate-sceneDrift"
+          className="absolute inset-[-30px] bg-cover bg-center bg-no-repeat opacity-[0.12] animate-sceneDrift will-change-transform"
           style={{ 
             backgroundImage: 'url(/bd.png)',
-            filter: 'saturate(0.5) brightness(0.45) hue-rotate(-10deg)',
             mixBlendMode: 'screen',
           }} 
         />
+        {/* Overlay to replace expensive CSS filters */}
+        <div className="absolute inset-0 bg-black/60 mix-blend-overlay" />
         {/* Edge fade — melts into darkness at borders */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-transparent to-[#050510]/70" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050510]/60 via-transparent to-[#050510]/60" />
@@ -31,13 +32,13 @@ export function OtakuAtmosphere() {
       {/* ═══════════════════════════════════════════════
           LAYER 1 — Cinematic Ambient Glow Orbs
           ═══════════════════════════════════════════════ */}
-      <div className="absolute top-[-10%] right-[-5%] w-[70%] h-[700px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FF3366]/6 via-[#FF3366]/1 to-transparent blur-[120px] mix-blend-screen animate-glowPulse" />
-      <div className="absolute top-[20%] left-[-10%] w-[50%] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#8F44FF]/6 via-[#8F44FF]/1 to-transparent blur-[140px] mix-blend-screen animate-glowPulse2" />
-      <div className="absolute bottom-[10%] right-[10%] w-[40%] h-[500px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FF3366]/4 via-transparent to-transparent blur-[160px] mix-blend-screen animate-glowPulse" />
+      <div className="absolute top-[-10%] right-[-5%] w-[70%] h-[700px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.15)_0%,_rgba(255,51,102,0.02)_40%,_transparent_70%)] mix-blend-screen animate-glowPulse will-change-[opacity,transform]" />
+      <div className="absolute top-[20%] left-[-10%] w-[50%] h-[600px] bg-[radial-gradient(ellipse_at_center,_rgba(143,68,255,0.15)_0%,_rgba(143,68,255,0.02)_40%,_transparent_70%)] mix-blend-screen animate-glowPulse2 will-change-[opacity,transform]" />
+      <div className="absolute bottom-[10%] right-[10%] w-[40%] h-[500px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.1)_0%,_transparent_70%)] mix-blend-screen animate-glowPulse will-change-[opacity,transform]" />
       
       {/* Warm lantern glow — bottom center, like the lanterns in the image */}
-      <div className="absolute bottom-[25%] left-[35%] w-[200px] h-[200px] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-[#FFA040]/8 via-[#FF8020]/3 to-transparent blur-[60px] animate-lanternGlow" />
-      <div className="absolute bottom-[30%] left-[55%] w-[150px] h-[150px] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-[#FFA040]/6 via-transparent to-transparent blur-[50px] animate-lanternGlow2" />
+      <div className="absolute bottom-[25%] left-[35%] w-[200px] h-[200px] bg-[radial-gradient(circle,_rgba(255,160,64,0.15)_0%,_rgba(255,128,32,0.05)_40%,_transparent_70%)] animate-lanternGlow will-change-opacity" />
+      <div className="absolute bottom-[30%] left-[55%] w-[150px] h-[150px] bg-[radial-gradient(circle,_rgba(255,160,64,0.1)_0%,_transparent_70%)] animate-lanternGlow2 will-change-opacity" />
 
       {/* ═══════════════════════════════════════════════
           LAYER 2 — Subtle Dot Grid Texture
@@ -90,7 +91,7 @@ export function OtakuAtmosphere() {
           LAYER 6 — Sakura Petals (Realistic Falling)
           ═══════════════════════════════════════════════ */}
       <div className="absolute inset-0 opacity-70 overflow-hidden z-[5]">
-         {[...Array(35)].map((_, i) => {
+         {[...Array(15)].map((_, i) => {
            const size = Math.random() * 6 + 4;
            const isLarge = i < 8;
            return (
@@ -108,9 +109,10 @@ export function OtakuAtmosphere() {
                  opacity: Math.random() * 0.5 + (isLarge ? 0.4 : 0.15),
                  borderRadius: '50% 0 50% 50%',
                  transform: `rotate(${Math.random() * 360}deg)`,
-                 boxShadow: isLarge ? '0 0 12px rgba(255,166,201,0.4)' : '0 0 6px rgba(255,166,201,0.2)',
+                 boxShadow: isLarge ? '0 0 8px rgba(255,166,201,0.2)' : 'none',
                  animation: `sakuraFall${isLarge ? 'Slow' : ''} ${Math.random() * 12 + (isLarge ? 16 : 10)}s cubic-bezier(0.4, 0, 0.2, 1) infinite`,
-                 animationDelay: `-${Math.random() * 25}s`
+                 animationDelay: `-${Math.random() * 25}s`,
+                 willChange: 'transform'
                }}
              />
            )
@@ -120,8 +122,8 @@ export function OtakuAtmosphere() {
       {/* ═══════════════════════════════════════════════
           LAYER 7 — Fireflies / Particles (Anime Night Feel)
           ═══════════════════════════════════════════════ */}
-      <div className="absolute inset-0 z-[6]">
-        {[...Array(20)].map((_, i) => (
+      <div className="absolute inset-0 z-[6] pointer-events-none">
+        {[...Array(10)].map((_, i) => (
           <div
             key={`ff-${i}`}
             className="absolute rounded-full"
@@ -132,9 +134,10 @@ export function OtakuAtmosphere() {
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               opacity: 0,
-              boxShadow: `0 0 ${6 + i % 4 * 3}px ${i % 3 === 0 ? '#FFA040' : i % 3 === 1 ? '#FF3366' : '#8F44FF'}`,
+              boxShadow: `0 0 4px ${i % 3 === 0 ? '#FFA040' : i % 3 === 1 ? '#FF3366' : '#8F44FF'}`,
               animation: `fireflyFloat ${8 + Math.random() * 10}s ease-in-out infinite`,
               animationDelay: `${Math.random() * 12}s`,
+              willChange: 'transform, opacity'
             }}
           />
         ))}
@@ -149,8 +152,8 @@ export function OtakuAtmosphere() {
       {/* ═══════════════════════════════════════════════
           LAYER 9 — Atmospheric Fog / Mist
           ═══════════════════════════════════════════════ */}
-      <div className="absolute bottom-0 left-0 w-full h-[40%] bg-gradient-to-t from-[#0D0015]/30 via-[#0D0015]/10 to-transparent animate-fogDrift z-[3]" />
-      <div className="absolute bottom-[5%] left-[-10%] w-[120%] h-[20%] bg-gradient-to-t from-[#1a0025]/20 to-transparent blur-[40px] animate-fogDrift2 z-[3]" />
+      <div className="absolute bottom-0 left-0 w-full h-[40%] bg-gradient-to-t from-[#0D0015]/30 via-[#0D0015]/10 to-transparent animate-fogDrift z-[3] will-change-transform" />
+      <div className="absolute bottom-[5%] left-[-10%] w-[120%] h-[20%] bg-gradient-to-t from-[#1a0025]/20 to-transparent animate-fogDrift2 z-[3] will-change-transform" />
 
       {/* ═══════════════════════════════════════════════
           LAYER 10 — Sakura Branch Silhouette (SVG)

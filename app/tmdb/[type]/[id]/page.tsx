@@ -9,6 +9,7 @@ import { MediaCard } from '@/components/Cards';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { CommentSection } from '@/components/CommentSection';
 import { OtakuAtmosphere } from '@/components/OtakuAtmosphere';
+import { BackButton } from '@/components/BackButton';
 
 export async function generateMetadata({ params }: { params: Promise<{ type: string, id: string }> }): Promise<Metadata> {
   const { type, id } = await params;
@@ -100,9 +101,7 @@ export default async function TmdbWatchPage({ params }: { params: Promise<{ type
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <Link href={`/search?type=${type}`} className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2">
-               <ArrowLeft className="size-4" /> Voltar
-            </Link>
+            <BackButton />
             <button className="bg-[#131520] hover:bg-[#1A1D2D] border border-white/10 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors">
                <Plus className="size-5" />
             </button>
