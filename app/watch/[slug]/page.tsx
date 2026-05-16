@@ -298,6 +298,25 @@ function PlayerContent({ slug }: { slug: string }) {
                </div>
             </div>
 
+            {/* Context Actions / Notice under player */}
+            <div className="flex flex-col gap-3 mt-2">
+              <div className="bg-[#131520] border border-white/5 px-6 py-4 rounded-xl flex items-start sm:items-center gap-4">
+                <Info className={`size-5 mt-0.5 sm:mt-0 shrink-0 ${isAnimeContent ? 'text-[#FF3366]' : 'text-[#8F44FF]'}`} />
+                <p className="text-sm text-[#8A93A6]">
+                  <strong className="text-white">DICA PREMIUM:</strong> Ao iniciar o player, o progresso será salvo automaticamente em seu <span className={isAnimeContent ? 'text-[#FF3366]' : 'text-[#A661FF]'}>Continuar Assistindo</span>.
+                </p>
+              </div>
+              
+              <div className="bg-[#131520] border border-amber-500/20 px-6 py-4 rounded-xl flex items-start sm:items-center gap-4">
+                <div className="w-5 h-5 shrink-0 rounded-full bg-amber-500/20 flex items-center justify-center mt-0.5 sm:mt-0">
+                  <span className="text-amber-500 font-black text-xs">!</span>
+                </div>
+                <p className="text-sm text-[#8A93A6] leading-relaxed">
+                  <strong className="text-amber-500">AVISO SOBRE ANÚNCIOS:</strong> O player acima é fornecido por servidores de terceiros. Nós não temos controle sobre pop-ups ou anúncios que possam abrir ao clicar. <strong className="text-white">Recomendamos fechar as novas guias imediatamente e retornar ao player.</strong>
+                </p>
+              </div>
+            </div>
+
             {/* Comments Section */}
             <div className="mt-12 pt-8 border-t border-white/5">
               <div className="flex items-center gap-3 text-white font-display font-bold text-[24px] mb-8 tracking-wide">
