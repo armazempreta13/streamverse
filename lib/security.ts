@@ -282,7 +282,7 @@ export function getSecurityHeaders(): Record<string, string> {
       "img-src 'self' data: blob: https://image.tmdb.org https://picsum.photos https://fastly.picsum.photos https://image.pollinations.ai",
       "media-src 'self' blob:",
       "frame-src 'self' https://www.youtube.com https://youtube.com https://myembed.biz https://challenges.cloudflare.com",
-      "connect-src 'self' https://api.themoviedb.org https://graphql.anilist.co https://firestore.googleapis.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss:",
+      "connect-src 'self' https://graphql.anilist.co https://firestore.googleapis.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss:",
       "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",

@@ -21,7 +21,7 @@
 		"binding": "IMAGES"
 	},
   "vars": {
-    "NEXT_PUBLIC_TMDB_API_KEY": "e977149fcbba55f76536674e77f0a186",
+    "TMDB_API_KEY": "e977149fcbba55f76536674e77f0a186",
     "SYNC_SECRET": "streamverse-sync-2026"
   },
   "triggers": {

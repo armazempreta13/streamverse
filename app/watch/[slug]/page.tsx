@@ -1,8 +1,12 @@
 'use client';
 
-import React, { Suspense, useEffect, useState, useRef, useMemo } from 'react';
+import React, { Suspense, useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import Image from 'next/image';
-import { Play, AlertCircle, Menu, Search, MessageSquare, ListVideo, ArrowLeft, ChevronLeft, ChevronRight, Maximize, Settings, FastForward, X } from 'lucide-react';
+import {
+  Play, AlertCircle, ListVideo, ArrowLeft,
+  ChevronLeft, ChevronRight, Maximize, Search,
+  Calendar, Clock, SkipForward, X
+} from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore/lite';
@@ -11,60 +15,195 @@ import { useWatchProgress } from '@/hooks/useWatchProgress';
 import { CommentSection } from '@/components/CommentSection';
 import { OtakuAtmosphere } from '@/components/OtakuAtmosphere';
 
+// ─── Episode Card ────────────────────────────────────────────────────────────
+
+function EpisodeCard({
+  ep,
+  isActive,
+  heroImage,
+  isAnime,
+  onClick,
+}: {
+  ep: any;
+  isActive: boolean;
+  heroImage: string;
+  isAnime: boolean;
+  onClick: () => void;
+}) {
+  const accent = isAnime ? '#FF3366' : '#8F44FF';
+
+  return (
+    <button
+      id={`ep-card-${ep.number}`}
+      onClick={onClick}
+      className={`
+        w-full flex gap-4 p-4 rounded-2xl text-left transition-all duration-300 group border
+        ${isActive
+          ? 'border-[var(--accent)]/40 bg-white/[0.06] shadow-[0_0_24px_rgba(0,0,0,0.4)]'
+          : 'border-transparent hover:border-white/10 hover:bg-white/[0.04]'}
+      `}
+      style={{ '--accent': accent } as React.CSSProperties}
+    >
+      {/* Thumbnail */}
+      <div className="relative w-24 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10">
+        <Image
+          src={ep.thumbnailUrl || heroImage}
+          alt={`Ep ${ep.number}`}
+          fill
+          className="object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        <div className={`absolute inset-0 transition-colors ${isActive ? 'bg-black/30' : 'bg-black/50 group-hover:bg-black/30'}`} />
+
+        {/* Number badge */}
+        <span className="absolute top-1.5 left-1.5 text-[10px] font-black bg-black/70 backdrop-blur-sm text-white px-1.5 py-0.5 rounded-md">
+          {String(ep.number).padStart(2, '0')}
+        </span>
+
+        {/* Play overlay when active */}
+        {isActive && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: accent }}>
+              <Play className="size-3.5 fill-white text-white ml-0.5" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex flex-col justify-center min-w-0 flex-1 gap-1">
+        <p
+          className={`text-[13px] font-bold line-clamp-1 transition-colors ${isActive ? 'text-[var(--accent)]' : 'text-white/90 group-hover:text-white'}`}
+          style={{ '--accent': accent } as React.CSSProperties}
+        >
+          {ep.title || `Episódio ${ep.number}`}
+        </p>
+        <p className="text-[11px] text-white/40 line-clamp-2 leading-relaxed">
+          {ep.description || 'Nenhuma descrição disponível.'}
+        </p>
+        <div className="flex items-center gap-3 mt-1">
+          {ep.releaseDate && (
+            <span className="flex items-center gap-1 text-[10px] text-white/30 font-medium">
+              <Calendar className="size-3" />{ep.releaseDate}
+            </span>
+          )}
+          <span className="flex items-center gap-1 text-[10px] text-white/30 font-medium">
+            <Clock className="size-3" />{ep.duration || '24 min'}
+          </span>
+        </div>
+      </div>
+
+      {/* Active left bar */}
+      {isActive && (
+        <div
+          className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full"
+          style={{ backgroundColor: accent }}
+        />
+      )}
+    </button>
+  );
+}
+
+// ─── Player ──────────────────────────────────────────────────────────────────
+
 function PlayerContent({ slug }: { slug: string }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  
+
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
-  // States that replace URL navigation for Binge Watching
+
   const [epNum, setEpNum] = useState(searchParams.get('ep') ? Number(searchParams.get('ep')) : 1);
   const [seasonNum, setSeasonNum] = useState(searchParams.get('season') ? Number(searchParams.get('season')) : 1);
   const [playerParam, setPlayerParam] = useState(searchParams.get('player') || '1');
-  
+
   const [searchEp, setSearchEp] = useState('');
   const [hasClickedPlay, setHasClickedPlay] = useState(false);
   const [autoPlayCanceled, setAutoPlayCanceled] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   const playerContainerRef = useRef<HTMLDivElement>(null);
+  const episodesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Sync URL smoothly without full page reload
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('ep', epNum.toString());
-    url.searchParams.set('season', seasonNum.toString());
-    url.searchParams.set('player', playerParam);
-    window.history.replaceState({}, '', url.toString());
-  }, [epNum, seasonNum, playerParam]);
-
-  // Reset play state and cancellations when episode changes
-  useEffect(() => {
-    setHasClickedPlay(false);
-    setAutoPlayCanceled(false);
-  }, [epNum, seasonNum, playerParam, slug]);
+  // ── Derived ──────────────────────────────────────────────────────────────
 
   const isMovie = content?.type === 'movie';
-  
-  // Memoized current episode data
+
   const currentEpData = useMemo(() => {
     if (!content) return null;
     if (isMovie) return content;
-    return content.episodes?.find((e: any) => e.number === epNum && (e.season || 1) === seasonNum) || content.episodes?.[0];
+    return (
+      content.episodes?.find(
+        (e: any) => e.number === epNum && (e.season || 1) === seasonNum
+      ) || content.episodes?.[0]
+    );
   }, [content, epNum, seasonNum, isMovie]);
 
-  // Memoized next episode data
+  const prevEpData = useMemo(() => {
+    if (!content || isMovie || !content.episodes) return null;
+    return content.episodes.find(
+      (e: any) => e.number === epNum - 1 && (e.season || 1) === seasonNum
+    );
+  }, [content, epNum, seasonNum, isMovie]);
+
   const nextEpData = useMemo(() => {
     if (!content || isMovie || !content.episodes) return null;
-    return content.episodes.find((e: any) => e.number === epNum + 1 && (e.season || 1) === seasonNum);
+    return content.episodes.find(
+      (e: any) => e.number === epNum + 1 && (e.season || 1) === seasonNum
+    );
   }, [content, epNum, seasonNum, isMovie]);
 
-  const videoSrc = (playerParam === '2' && currentEpData?.videoUrl2) ? currentEpData.videoUrl2 : (currentEpData?.videoUrl || '');
-  const episodeTitle = isMovie ? '' : (currentEpData?.title || 'Episódio');
+  const availablePlayers = useMemo(() => {
+    if (!content) return [];
+    const options = [];
+    if (currentEpData?.videoUrl) {
+      options.push({ id: '1', name: 'Server 1', badge: 'Dublado' });
+    }
+    if (currentEpData?.videoUrl2) {
+      options.push({ id: '2', name: 'Server 2', badge: 'Legendado' });
+    }
+    if (currentEpData?.iframes && Array.isArray(currentEpData.iframes)) {
+      currentEpData.iframes.forEach((ifr: any, i: number) => {
+        options.push({ 
+          id: `iframe-${i}`, 
+          name: ifr.name || `Server ${i + 3}`, 
+          badge: ifr.isDub ? 'Dublado' : ifr.badge || ''
+        });
+      });
+    }
+    if (options.length === 0) {
+      options.push({ id: '1', name: 'Principal', badge: '' });
+    }
+    return options;
+  }, [currentEpData, content]);
+
+  const videoSrc = useMemo(() => {
+    if (!currentEpData) return '';
+    if (playerParam === '2' && currentEpData.videoUrl2) return currentEpData.videoUrl2;
+    if (playerParam.startsWith('iframe-')) {
+       const idx = parseInt(playerParam.split('-')[1]);
+       if (currentEpData.iframes && currentEpData.iframes[idx]) {
+         return currentEpData.iframes[idx].url || currentEpData.iframes[idx];
+       }
+    }
+    return currentEpData.videoUrl || '';
+  }, [playerParam, currentEpData]);
+
+  const episodeTitle = isMovie ? '' : currentEpData?.title || 'Episódio';
   const durationStr = currentEpData?.duration || (isMovie ? '120m' : '24m');
-  const thumbnail = currentEpData?.thumbnailUrl || content?.heroImage || 'https://picsum.photos/seed/bg/1920/1080';
+  const thumbnail =
+    currentEpData?.thumbnailUrl || content?.heroImage || 'https://picsum.photos/seed/bg/1920/1080';
+
+  const isAnimeContent =
+    content?.type === 'anime' ||
+    (content?.categories?.some((c: string) => c.toLowerCase() === 'anime')) ||
+    content?.genres?.toLowerCase().includes('anime');
+
+  const accent = isAnimeContent ? '#FF3366' : '#8F44FF';
+  const accentShadow = isAnimeContent
+    ? 'rgba(255,51,102,0.35)'
+    : 'rgba(143,68,255,0.35)';
+
+  // ── Watch progress ────────────────────────────────────────────────────────
 
   const { watchedSeconds, totalSeconds } = useWatchProgress({
     contentSlug: slug,
@@ -75,40 +214,119 @@ function PlayerContent({ slug }: { slug: string }) {
     contentImage: content?.heroImage || '',
     durationStr,
     isMovie,
-    isActive: hasClickedPlay
+    isActive: hasClickedPlay,
   });
 
-  const isAnimeContent = content?.type === 'anime' || 
-                         (content?.categories && Array.isArray(content.categories) && content.categories.some((c: string) => c.toLowerCase() === 'anime')) || 
-                         content?.genres?.toLowerCase().includes('anime');
+  const timeLeft = Math.max(0, totalSeconds - watchedSeconds);
+  const showNextEpBanner =
+    hasClickedPlay && !isMovie && nextEpData && timeLeft <= 15 && timeLeft > 0 && !autoPlayCanceled;
 
-  const themeColor = isAnimeContent ? '#FF3366' : '#8F44FF';
+  // ── URL sync ──────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('ep', epNum.toString());
+    url.searchParams.set('season', seasonNum.toString());
+    url.searchParams.set('player', playerParam);
+    window.history.replaceState({}, '', url.toString());
+
+    // scroll sidebar to active ep
+    setTimeout(() => {
+      const activeEl = document.getElementById(`ep-card-${epNum}`);
+      if (activeEl && episodesContainerRef.current) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 400);
+  }, [epNum, seasonNum, playerParam]);
+
+  // ── Reset play state on ep/player change ─────────────────────────────────
+  // KEY IMPROVEMENT: quando muda ep pela página, mantemos hasClickedPlay=true
+  // para o player recarregar automaticamente sem precisar clicar em play de novo.
+  const prevEpRef = useRef(epNum);
+  useEffect(() => {
+    if (prevEpRef.current !== epNum) {
+      // troca de ep — se já estava assistindo, mantém o player aberto
+      setAutoPlayCanceled(false);
+      prevEpRef.current = epNum;
+      // Não reseta hasClickedPlay — player recarrega com novo src automaticamente
+    }
+  }, [epNum]);
+
+  useEffect(() => {
+    // só reseta no playerParam change
+    setHasClickedPlay(false);
+    setAutoPlayCanceled(false);
+  }, [playerParam, slug]);
+
+  // ── Auto-advance ──────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (showNextEpBanner && timeLeft === 0 && !autoPlayCanceled) {
+      handleNextEpisode();
+    }
+  }, [timeLeft, showNextEpBanner, autoPlayCanceled]);
+
+  const handleNextEpisode = useCallback(() => {
+    if (nextEpData) {
+      setEpNum(nextEpData.number);
+      setSeasonNum(nextEpData.season || seasonNum);
+    }
+  }, [nextEpData, seasonNum]);
+
+  const handlePrevEpisode = useCallback(() => {
+    if (prevEpData) {
+      setEpNum(prevEpData.number);
+      setSeasonNum(prevEpData.season || seasonNum);
+    }
+  }, [prevEpData, seasonNum]);
+
+  // ── Fullscreen ────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      playerContainerRef.current?.requestFullscreen().catch(console.error);
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  // ── Fetch content ─────────────────────────────────────────────────────────
 
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        let fetchedContent: any = null;
         const q = query(collection(db, 'contents'), where('slug', '==', slug), limit(1));
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
           const doc = snapshot.docs[0];
           const data = doc.data();
-          fetchedContent = {
+          const fetched: any = {
             id: doc.id,
             ...data,
-            heroImage: data.coverImage || data.thumbnailImage || 'https://picsum.photos/seed/hero/1920/1080',
+            heroImage:
+              data.coverImage ||
+              data.thumbnailImage ||
+              'https://picsum.photos/seed/hero/1920/1080',
           };
-
           if (data.type !== 'movie') {
             const epRef = collection(db, `contents/${doc.id}/episodes`);
             const epSnapshot = await getDocs(epRef);
-            fetchedContent.episodes = epSnapshot.docs.map((epDoc: any) => ({
-              id: epDoc.id,
-              ...epDoc.data(),
-            })).sort((a: any, b: any) => (a.season || 1) === (b.season || 1) ? a.number - b.number : (a.season || 1) - (b.season || 1));
+            fetched.episodes = epSnapshot.docs
+              .map((d: any) => ({ id: d.id, ...d.data() }))
+              .sort((a: any, b: any) =>
+                (a.season || 1) === (b.season || 1)
+                  ? a.number - b.number
+                  : (a.season || 1) - (b.season || 1)
+              );
           }
+          setContent(fetched);
         }
-        setContent(fetchedContent);
       } catch (e) {
         console.error(e);
       } finally {
@@ -118,345 +336,477 @@ function PlayerContent({ slug }: { slug: string }) {
     fetchContent();
   }, [slug]);
 
-  // Fullscreen Listener
-  useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      playerContainerRef.current?.requestFullscreen().catch(err => console.error(err));
-    } else {
-      document.exitFullscreen();
-    }
-  };
-
-  // AutoPlay Logic
-  const timeLeft = Math.max(0, totalSeconds - watchedSeconds);
-  const showNextEpOverlay = hasClickedPlay && !isMovie && nextEpData && timeLeft <= 15 && timeLeft > 0 && !autoPlayCanceled;
-  
-  useEffect(() => {
-    if (showNextEpOverlay && timeLeft === 0 && !autoPlayCanceled) {
-      handleNextEpisode();
-    }
-  }, [timeLeft, showNextEpOverlay, autoPlayCanceled]);
-
-  const handleNextEpisode = () => {
-    if (nextEpData) {
-      setEpNum(nextEpData.number);
-      setSeasonNum(nextEpData.season || seasonNum);
-    }
-  };
+  // ── Search ────────────────────────────────────────────────────────────────
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchEp || !content.episodes) return;
+    if (!searchEp || !content?.episodes) return;
     const num = Number(searchEp);
-    const found = content.episodes.find((ep:any) => ep.number === num && (ep.season || 1) === seasonNum);
-    if(found) setEpNum(num);
-    else alert('Episódio não encontrado nesta temporada!');
+    const found = content.episodes.find(
+      (ep: any) => ep.number === num && (ep.season || 1) === seasonNum
+    );
+    if (found) {
+      setEpNum(num);
+      setSearchEp('');
+    } else {
+      alert('Episódio não encontrado!');
+    }
   };
 
-  if (loading) {
-     return (
-       <div className="min-h-screen bg-[#050510] flex items-center justify-center">
-         <div className="w-12 h-12 rounded-full border-4 border-[#FF3366] border-t-transparent animate-spin"></div>
-       </div>
-     );
-  }
+  // ── Render guards ─────────────────────────────────────────────────────────
 
-  if (!content) return <div className="min-h-screen bg-[#050510] text-[#D1D5DB] flex items-center justify-center">Conteúdo não encontrado</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen bg-[#060610] flex items-center justify-center">
+        <div
+          className="w-10 h-10 rounded-full border-[3px] border-t-transparent animate-spin"
+          style={{ borderColor: `${accent} transparent ${accent} ${accent}` }}
+        />
+      </div>
+    );
 
-  const isIframeHtml = videoSrc.trim().startsWith('<iframe') || videoSrc.trim().startsWith('<div');
+  if (!content)
+    return (
+      <div className="min-h-screen bg-[#060610] text-white/60 flex items-center justify-center text-xl font-bold">
+        Conteúdo não encontrado
+      </div>
+    );
+
+  const isIframeHtml =
+    videoSrc.trim().startsWith('<iframe') || videoSrc.trim().startsWith('<div');
+
+  const seasonEpisodes = content.episodes?.filter(
+    (e: any) => (e.season || 1) === seasonNum
+  ) ?? [];
+
+  // ── JSX ───────────────────────────────────────────────────────────────────
 
   return (
-    <main className="min-h-screen bg-[#050510] text-[#D1D5DB] font-sans relative overflow-x-hidden">
-       {isAnimeContent && <OtakuAtmosphere backdropUrl={content?.heroImage} />}
-       
-       {/* Ambient Ambient Image */}
-       <div className="absolute top-0 left-0 w-full h-[600px] z-0 opacity-20 pointer-events-none mix-blend-screen">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050510]/80 to-[#050510] z-10" />
-          <Image src={content.heroImage} alt="bg" fill className="object-cover object-top mask-image-radial" priority />
-       </div>
+    <main className="min-h-screen bg-[#060610] text-white font-sans overflow-x-hidden">
+      {isAnimeContent && <OtakuAtmosphere backdropUrl={content?.heroImage} />}
 
-       <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-10 flex flex-col lg:flex-row gap-8 relative z-10 animate-in fade-in duration-700">
-         
-         <div className="flex-1 flex flex-col space-y-6">
-            <Link href={`/content/${content.slug}`} className="inline-flex w-fit items-center gap-2 text-[#8A93A6] hover:text-white transition-colors group">
-              <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors border border-white/5">
-                 <ArrowLeft className="size-4 group-hover:-translate-x-1 transition-transform" />
+      {/* Hero ambient */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Image
+          src={content.heroImage}
+          alt="bg"
+          fill
+          className="object-cover object-top opacity-[0.06] scale-110"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#060610]/60 via-[#060610]/90 to-[#060610]" />
+      </div>
+
+      <div className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
+
+        {/* ── Back link ── */}
+        <Link
+          href={`/content/${content.slug}`}
+          className="inline-flex items-center gap-2.5 text-white/40 hover:text-white/80 transition-colors mb-6 group"
+        >
+          <div className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+            <ArrowLeft className="size-3.5 group-hover:-translate-x-0.5 transition-transform" />
+          </div>
+          <span className="text-sm font-semibold tracking-wide">Página da Obra</span>
+        </Link>
+
+        <div className="flex flex-col xl:flex-row gap-6">
+
+          {/* ════════════════════ LEFT COL ════════════════════ */}
+          <div className="flex-1 min-w-0 flex flex-col gap-5">
+
+            {/* Title row */}
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+              <div className="flex-1">
+                <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight">
+                  {isMovie ? content.title : content.title}
+                </h1>
+                {!isMovie && currentEpData && (
+                  <p className="text-sm font-semibold mt-1" style={{ color: accent }}>
+                    Episódio {epNum}
+                    {currentEpData.title ? ` — ${currentEpData.title}` : ''}
+                  </p>
+                )}
               </div>
-              <span className="text-sm font-medium tracking-wide">Voltar para a página da obra</span>
-            </Link>
-            
-            <div 
-              ref={playerContainerRef}
-              className={`bg-[#0A0A16] rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border border-white/5 relative z-[110] transition-all duration-500 ${isFullscreen ? 'w-screen h-screen rounded-none border-none fixed inset-0 z-[9999]' : ''}`}
-            >
-               {!isFullscreen && (
-                 <div className="p-6 sm:px-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                   <h1 className="text-[20px] sm:text-[28px] font-display font-bold text-white leading-tight">
-                      {isMovie ? content.title : `${content.title} - Episódio ${epNum.toString().padStart(2, '0')}`}
-                   </h1>
-                   <div className="flex items-center gap-3 shrink-0">
-                     <button onClick={() => setPlayerParam('1')} className={`px-6 py-2.5 rounded-full text-[13px] font-bold transition-all ${playerParam === '1' ? (isAnimeContent ? 'bg-[#FF3366] text-white shadow-[0_0_15px_rgba(255,51,102,0.4)]' : 'bg-[#8F44FF] text-white shadow-[0_0_15px_rgba(143,68,255,0.4)]') : 'bg-white/5 text-[#8A93A6] hover:bg-white/10 hover:text-white'}`}>PLAYER FHD</button>
-                     <button onClick={() => setPlayerParam('2')} className={`px-6 py-2.5 rounded-full text-[13px] font-bold transition-all ${playerParam === '2' ? (isAnimeContent ? 'bg-[#FF3366] text-white shadow-[0_0_15px_rgba(255,51,102,0.4)]' : 'bg-[#8F44FF] text-white shadow-[0_0_15px_rgba(143,68,255,0.4)]') : 'bg-white/5 text-[#8A93A6] hover:bg-white/10 hover:text-white'}`}>PLAYER 2</button>
-                   </div>
-                 </div>
-               )}
 
-               <div className={`w-full bg-black relative flex items-center justify-center group/player overflow-hidden ${isFullscreen ? 'flex-1' : 'aspect-video'}`}>
-                 {videoSrc && hasClickedPlay ? (
-                    <>
-                      {isIframeHtml ? (
-                        <div className="w-full h-full object-cover [&_iframe]:w-full [&_iframe]:h-full border-0" dangerouslySetInnerHTML={{ __html: videoSrc }} />
-                      ) : (
-                        <iframe src={videoSrc} allowFullScreen className="w-full h-full border-0" />
-                      )}
-                      
-                      {/* BINGE WATCH OVERLAY */}
-                      {showNextEpOverlay && (
-                        <div className="absolute bottom-10 right-10 z-[1000] w-[320px] sm:w-[380px] bg-[#0A0A16]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-in slide-in-from-right-8 fade-in duration-500">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <h4 className="text-white font-bold text-sm tracking-wide">PRÓXIMO EPISÓDIO</h4>
-                              <p className="text-[#FF3366] text-[12px] font-bold mt-0.5 animate-pulse">Iniciando em {timeLeft} segundos...</p>
-                            </div>
-                            <button onClick={() => setAutoPlayCanceled(true)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
-                              <X className="size-4 text-[#8A93A6]" />
-                            </button>
-                          </div>
-                          
-                          <div className="flex gap-4 p-2 bg-white/5 rounded-xl border border-white/5">
-                            <div className="relative w-28 h-16 rounded-lg overflow-hidden shrink-0">
-                              <Image src={nextEpData.thumbnailUrl || content.heroImage} alt="Next" fill className="object-cover" />
-                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                <Play className="size-6 text-white/80" />
-                              </div>
-                            </div>
-                            <div className="flex flex-col justify-center min-w-0">
-                              <p className="text-white text-[13px] font-bold truncate">EP {nextEpData.number.toString().padStart(2, '0')}</p>
-                              <p className="text-[#8A93A6] text-[11px] font-medium truncate">{nextEpData.title}</p>
-                              <p className="text-[#5C6370] text-[10px] mt-1 uppercase tracking-tighter">{nextEpData.duration || '24m'}</p>
-                            </div>
-                          </div>
-                          
-                          <button 
-                            onClick={handleNextEpisode}
-                            className="w-full mt-4 bg-white text-black font-black text-xs py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-[0_10px_20px_rgba(255,255,255,0.1)]"
-                          >
-                            <FastForward className="size-4 fill-current" />
-                            ASSISTIR AGORA
-                          </button>
-                          
-                          {/* Progress bar line */}
-                          <div className="absolute bottom-0 left-0 h-1 bg-[#FF3366] rounded-b-2xl transition-all duration-1000 ease-linear" style={{ width: `${(timeLeft / 15) * 100}%` }} />
-                        </div>
-                      )}
-
-                      {/* Floating In-Player Controls (Optional enhancement) */}
-                      {isFullscreen && (
-                        <div className="absolute top-6 left-6 z-[200] flex items-center gap-4 opacity-0 group-hover/player:opacity-100 transition-opacity duration-300">
-                           <button onClick={toggleFullscreen} className="p-3 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-white hover:bg-white/20 transition-all">
-                              <X className="size-5" />
-                           </button>
-                           <div className="flex flex-col">
-                              <h2 className="text-white font-bold text-lg drop-shadow-md">{content.title}</h2>
-                              <p className="text-[#8A93A6] text-sm font-medium">Temporada {seasonNum} • Episódio {epNum}</p>
-                           </div>
-                        </div>
-                      )}
-                    </>
-                 ) : (
-                    <div 
-                      className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer group/play"
-                      onClick={() => { if (videoSrc) setHasClickedPlay(true); else alert('Vídeo não disponível ainda.'); }}
-                    >
-                      <Image src={thumbnail} alt={content.title} fill className="object-cover opacity-50 group-hover/play:opacity-70 transition-all duration-700 group-hover/play:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 mix-blend-multiply" />
-                      <div className={`w-24 h-24 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full flex items-center justify-center z-10 shadow-[0_0_40px_rgba(0,0,0,0.5)] group-hover/play:scale-110 transition-all duration-500 relative ${isAnimeContent ? 'group-hover/play:bg-[#FF3366] group-hover/play:border-[#FF3366] group-hover/play:shadow-[0_0_40px_rgba(255,51,102,0.4)]' : 'group-hover/play:bg-[#8F44FF] group-hover/play:border-[#8F44FF] group-hover/play:shadow-[0_0_40px_rgba(143,68,255,0.4)]'}`}>
-                        <Play className="size-12 fill-current ml-2" />
-                      </div>
-                    </div>
-                 )}
-               </div>
-               
-               {/* Custom Player Control Bar */}
-               <div className="p-4 sm:px-8 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-[#0A0A16]">
-                  <div className="flex items-center gap-8">
-                    <button onClick={() => setShowSidebar(!showSidebar)} className={`flex items-center gap-2.5 text-[13px] font-bold transition-colors group ${showSidebar ? 'text-white' : 'text-[#8A93A6] hover:text-white'}`}>
-                      <div className={`p-1.5 rounded-full bg-white/5 transition-colors ${showSidebar ? 'bg-white/10 text-white' : 'group-hover:bg-white/10'}`}>
-                        <ListVideo className="size-4" />
-                      </div>
-                      <span className="uppercase tracking-widest hidden sm:inline">EPISÓDIOS</span>
-                    </button>
-                    <button className="flex items-center gap-2.5 text-[13px] font-bold text-[#8A93A6] hover:text-[#EF4444] transition-colors group">
-                      <div className="p-1.5 rounded-full bg-white/5 group-hover:bg-[#EF4444]/20 transition-colors">
-                        <AlertCircle className="size-4 group-hover:text-[#EF4444]" />
-                      </div>
-                      <span className="uppercase tracking-widest hidden sm:inline">REPORTAR</span>
-                    </button>
-                  </div>
+              {/* Player switcher (Enhanced for Mobile) */}
+              <div className="w-full lg:w-auto shrink-0 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between lg:justify-end mb-1">
+                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest hidden lg:block mr-4">
+                    Opções de Servidor
+                  </span>
                   
-                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                    {/* Previous Button */}
-                    {content.episodes?.some((e:any) => e.number === epNum - 1 && (e.season || 1) === seasonNum) && (
-                      <button 
-                        onClick={() => setEpNum(epNum - 1)}
-                        className="flex flex-1 sm:flex-none items-center justify-center gap-2 text-[12px] font-black text-white bg-white/5 hover:bg-white/10 py-3 px-6 rounded-full transition-all border border-white/5 group active:scale-95"
-                      >
-                        <ChevronLeft className="size-4 group-hover:-translate-x-1 transition-transform" />
-                        <span className="uppercase tracking-widest">ANTERIOR</span>
-                      </button>
-                    )}
-                    
-                    {/* Next Button */}
-                    {content.episodes?.some((e:any) => e.number === epNum + 1 && (e.season || 1) === seasonNum) && (
-                      <button 
-                        onClick={() => setEpNum(epNum + 1)}
-                        className={`flex flex-1 sm:flex-none items-center justify-center gap-2 text-[12px] font-black py-3 px-6 rounded-full transition-all group active:scale-95 ${isAnimeContent ? 'bg-[#FF3366] text-white shadow-[0_10px_20px_rgba(255,51,102,0.2)]' : 'bg-[#8F44FF] text-white shadow-[0_10px_20px_rgba(143,68,255,0.2)]'}`}
-                      >
-                        <span className="uppercase tracking-widest text-[#050510] font-black">PRÓXIMO</span>
-                        <ChevronRight className="size-4 text-[#050510] group-hover:translate-x-1 transition-transform" />
-                      </button>
-                    )}
-
-                    <div className="w-[1px] h-6 bg-white/10 mx-2 hidden sm:block" />
-                    
-                    <button onClick={toggleFullscreen} className="flex items-center justify-center w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/5 text-[#8A93A6] hover:text-white">
-                      <Maximize className="size-5" />
-                    </button>
-                  </div>
-               </div>
-            </div>
-
-            {/* Resume progress bar / notification */}
-            <div className="flex flex-col gap-3 mt-2">
-              {hasClickedPlay && watchedSeconds > 30 && (
-                <div className="bg-[#131520] border border-[#FF3366]/20 px-6 py-4 rounded-2xl flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAnimeContent ? 'bg-[#FF3366]/10 text-[#FF3366]' : 'bg-[#8F44FF]/10 text-[#8F44FF]'}`}>
-                      <Play className="size-5 fill-current ml-0.5" />
-                    </div>
-                    <div>
-                      <p className="text-white font-bold text-sm">Resumo de Reprodução</p>
-                      <p className="text-[#8A93A6] text-xs mt-0.5">
-                        Você parou em <strong className="text-white">{Math.floor(watchedSeconds / 60)}m {Math.floor(watchedSeconds % 60)}s</strong>.
-                        <span className="hidden sm:inline"> Use a barra do vídeo para ajustar se necessário.</span>
-                      </p>
-                    </div>
+                  {/* Warning Alert - Glowing & Discreet */}
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FFB800]/10 border border-[#FFB800]/20 animate-pulse">
+                    <AlertCircle className="size-3 text-[#FFB800]" />
+                    <span className="text-[9px] font-bold text-[#FFB800] tracking-wider uppercase">
+                      Lento? Troque de servidor
+                    </span>
                   </div>
                 </div>
-              )}
-              
-              <div className="bg-[#131520] border border-amber-500/20 px-6 py-4 rounded-2xl flex items-start sm:items-center gap-4">
-                <div className="w-5 h-5 shrink-0 rounded-full bg-amber-500/20 flex items-center justify-center mt-0.5 sm:mt-0"><span className="text-amber-500 font-black text-xs">!</span></div>
-                <p className="text-xs sm:text-sm text-[#8A93A6] leading-relaxed font-medium">
-                  <strong className="text-amber-500">AVISO:</strong> O player é fornecido por servidores externos. <strong className="text-white">Recomendamos fechar pop-ups e abas extras imediatamente.</strong>
-                </p>
+                
+                {/* Players List with Overflow internally */}
+                <div 
+                  className={`flex flex-col gap-2 ${
+                    availablePlayers.length > 2 
+                      ? 'max-h-[140px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent' 
+                      : ''
+                  }`}
+                >
+                  {availablePlayers.map((p) => {
+                    const isActive = playerParam === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => setPlayerParam(p.id)}
+                        className={`w-full lg:w-[260px] flex items-center justify-between px-4 py-3 rounded-xl transition-all border group ${
+                          isActive
+                            ? 'text-white border-transparent'
+                            : 'bg-white/5 text-white/50 border-white/5 hover:bg-white/10 hover:text-white/80 hover:border-white/10'
+                        }`}
+                        style={
+                          isActive
+                            ? { backgroundColor: accent, boxShadow: `0 4px 20px ${accentShadow}` }
+                            : {}
+                        }
+                      >
+                        <div className="flex items-center gap-3">
+                          <Play className={`size-3.5 ${isActive ? 'fill-white text-white' : 'text-white/40 group-hover:text-white/60'}`} />
+                          <span className="text-[11px] font-black tracking-widest uppercase">{p.name}</span>
+                        </div>
+                        {p.badge && (
+                          <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                            isActive ? 'bg-black/20 text-white' : 'bg-white/10 text-white/60 group-hover:bg-white/20'
+                          }`}>
+                            {p.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            {/* Comments Section */}
-            <div className="mt-8 pt-10 border-t border-white/5">
-              <CommentSection contentId={slug} theme={isAnimeContent ? 'anime' : 'default'} />
+            {/* ── Video player box ── */}
+            <div
+              ref={playerContainerRef}
+              className={`bg-black rounded-2xl overflow-hidden border border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.7)] ${isFullscreen ? 'fixed inset-0 z-[9999] rounded-none border-none' : ''
+                }`}
+            >
+              {/* Video area */}
+              <div className={`relative bg-black ${isFullscreen ? 'h-screen' : 'aspect-video'}`}>
+                {videoSrc && hasClickedPlay ? (
+                  isIframeHtml ? (
+                    <div
+                      className="w-full h-full [&_iframe]:w-full [&_iframe]:h-full"
+                      dangerouslySetInnerHTML={{ __html: videoSrc }}
+                    />
+                  ) : (
+                    <iframe
+                      key={`${videoSrc}-${epNum}`}  // <-- força reload ao trocar ep
+                      src={videoSrc}
+                      allowFullScreen
+                      className="w-full h-full border-0"
+                    />
+                  )
+                ) : (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center cursor-pointer group/play"
+                    onClick={() => {
+                      if (videoSrc) setHasClickedPlay(true);
+                      else alert('Vídeo não disponível ainda.');
+                    }}
+                  >
+                    <Image
+                      src={thumbnail}
+                      alt={content.title}
+                      fill
+                      className="object-cover opacity-50 group-hover/play:opacity-70 transition-all duration-700 group-hover/play:scale-[1.02]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div
+                      className="relative z-10 w-20 h-20 rounded-full border-2 border-white/20 backdrop-blur-md bg-white/10 flex items-center justify-center group-hover/play:scale-110 transition-all duration-400"
+                      style={{
+                        boxShadow: `0 0 0 0 ${accentShadow}`,
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = accent;
+                        (e.currentTarget as HTMLElement).style.borderColor = accent;
+                        (e.currentTarget as HTMLElement).style.boxShadow = `0 0 40px ${accentShadow}`;
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)';
+                        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.2)';
+                        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                      }}
+                    >
+                      <Play className="size-9 fill-white text-white ml-1" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Page-level episode controls (below player) ── */}
+              {!isMovie && (
+                <div className="flex items-center justify-between gap-4 px-5 py-4 bg-[#0c0c18] border-t border-white/[0.06]">
+                  {/* Prev */}
+                  <button
+                    onClick={handlePrevEpisode}
+                    disabled={!prevEpData}
+                    className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all ${prevEpData
+                        ? 'bg-white/[0.06] hover:bg-white/10 text-white/80 hover:text-white border border-white/10 hover:border-white/20 active:scale-95'
+                        : 'opacity-20 cursor-not-allowed bg-white/[0.03] text-white/30 border border-white/5'
+                      }`}
+                  >
+                    <ChevronLeft className="size-4" />
+                    <span className="hidden sm:inline">Anterior</span>
+                    {prevEpData && (
+                      <span className="text-white/40 text-xs font-normal hidden md:inline">
+                        Ep {prevEpData.number}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Current ep info + progress */}
+                  <div className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
+                    <p className="text-white/70 text-xs font-semibold text-center truncate max-w-[280px]">
+                      {currentEpData?.title
+                        ? `${epNum}. ${currentEpData.title}`
+                        : `Episódio ${epNum}`}
+                    </p>
+                    {/* Progress bar */}
+                    {hasClickedPlay && totalSeconds > 0 && (
+                      <div className="w-full max-w-[260px] h-[3px] rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000"
+                          style={{
+                            width: `${(watchedSeconds / totalSeconds) * 100}%`,
+                            backgroundColor: accent,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Next */}
+                  <button
+                    onClick={handleNextEpisode}
+                    disabled={!nextEpData}
+                    className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all ${nextEpData
+                        ? 'text-white active:scale-95'
+                        : 'opacity-20 cursor-not-allowed bg-white/[0.03] text-white/30 border border-white/5'
+                      }`}
+                    style={
+                      nextEpData
+                        ? {
+                          backgroundColor: accent,
+                          boxShadow: `0 6px 20px ${accentShadow}`,
+                        }
+                        : {}
+                    }
+                  >
+                    {nextEpData && (
+                      <span className="text-xs font-normal opacity-80 hidden md:inline">
+                        Ep {nextEpData.number}
+                      </span>
+                    )}
+                    <span className="hidden sm:inline">Próximo</span>
+                    <ChevronRight className="size-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
-         </div>
-
-         {/* RIGHT SIDEBAR: EPISODE LIST (Binge Panel) */}
-         {!isMovie && content.episodes && (
-           <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 flex flex-col animate-in fade-in slide-in-from-right-8 duration-700 delay-150 fill-mode-both ${showSidebar ? 'block' : 'lg:block hidden'}`}>
-              <div className="bg-[#0A0A16] rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5 flex flex-col h-[700px] lg:h-[800px] overflow-hidden sticky top-10">
-                
-                {/* Header Side Panel */}
-                <div className="p-6 bg-[#131520] border-b border-white/5">
-                  <h2 className="text-white font-display font-black text-xl tracking-tight mb-4">EPISÓDIOS</h2>
-                  
-                  {/* Season Selector */}
-                  {content.seasons > 1 && (
-                    <div className="mb-4">
-                       <select 
-                          value={seasonNum} 
-                          onChange={(e) => setSeasonNum(Number(e.target.value))}
-                          className="w-full bg-[#0A0A16] text-[#D1D5DB] text-[13px] font-black p-4 rounded-[16px] outline-none border border-white/10 appearance-none cursor-pointer hover:border-white/20 transition-all focus:ring-1 focus:ring-[#FF3366]"
-                       >
-                         {Array.from({ length: content.seasons }).map((_, i) => (
-                           <option key={i+1} value={i+1}>{i + 1}ª TEMPORADA</option>
-                         ))}
-                       </select>
+            {/* ── Autoplay banner ── */}
+            {showNextEpBanner && (
+              <div
+                className="flex flex-col sm:flex-row items-center justify-between gap-5 p-5 rounded-2xl border animate-in slide-in-from-top-2 fade-in duration-500"
+                style={{
+                  backgroundColor: 'rgba(12,12,24,0.95)',
+                  borderColor: `${accent}40`,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.5)`,
+                }}
+              >
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div className="relative w-28 h-18 rounded-xl overflow-hidden shrink-0 border border-white/10">
+                    <Image
+                      src={nextEpData.thumbnailUrl || content.heroImage}
+                      alt="next ep"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <SkipForward className="size-6 fill-white/70 text-white/70" />
                     </div>
+                  </div>
+                  <div>
+                    <p className="text-white font-black text-sm">PRÓXIMO EPISÓDIO</p>
+                    <p className="text-sm text-white/50 mt-0.5">
+                      Ep {nextEpData.number}: {nextEpData.title}
+                    </p>
+                    <p
+                      className="text-xs font-bold mt-1.5 animate-pulse"
+                      style={{ color: accent }}
+                    >
+                      Iniciando em {timeLeft}s...
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={() => setAutoPlayCanceled(true)}
+                    className="flex-1 sm:flex-none flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 text-xs font-bold tracking-wide transition-all border border-white/10"
+                  >
+                    <X className="size-3.5" />
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleNextEpisode}
+                    className="flex-1 sm:flex-none flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black text-xs font-black tracking-wide transition-all hover:bg-white/90"
+                  >
+                    <Play className="size-3.5 fill-black" />
+                    Assistir Agora
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── About section ── */}
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 sm:p-8">
+              <h2 className="text-white font-black text-lg mb-4 tracking-tight">
+                {isMovie ? 'Sobre o Filme' : `Sobre o Episódio ${epNum}`}
+              </h2>
+              <p className="text-white/50 leading-relaxed text-sm">
+                {currentEpData?.description ||
+                  'Nenhuma descrição disponível para este episódio. Assista para descobrir!'}
+              </p>
+            </div>
+
+            {/* ── Warning ── */}
+            <div className="flex items-center gap-4 px-5 py-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+              <span className="text-amber-500 font-black text-sm shrink-0">!</span>
+              <p className="text-xs text-white/40 font-medium uppercase tracking-wide">
+                <strong className="text-amber-500/80">AVISO:</strong> Servidores externos podem conter anúncios. Feche pop-ups imediatamente.
+              </p>
+            </div>
+
+            {/* ── Report ── */}
+            <button className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-red-400/70 transition-colors self-start">
+              <AlertCircle className="size-3.5" />
+              Reportar problema com este episódio
+            </button>
+
+            {/* ── Comments ── */}
+            <div className="mt-4">
+              <CommentSection contentId={slug} theme={isAnimeContent ? 'anime' : 'default'} />
+            </div>
+          </div>
+
+          {/* ════════════════════ RIGHT COL — Episode sidebar ════════════════════ */}
+          {!isMovie && content.episodes && (
+            <div className={`w-full xl:w-[420px] shrink-0 transition-all duration-500 ${showSidebar ? 'block' : 'hidden xl:hidden'}`}>
+              <div className="bg-[#0c0c18] border border-white/[0.07] rounded-2xl overflow-hidden flex flex-col sticky top-8" style={{ height: 'calc(100vh - 5rem)', maxHeight: '900px' }}>
+
+                {/* Header */}
+                <div className="px-6 pt-6 pb-4 border-b border-white/[0.06] flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <ListVideo className="size-5 text-white/50" />
+                      <h2 className="text-white font-black text-base tracking-tight">EPISÓDIOS</h2>
+                    </div>
+                    <span className="text-[11px] font-bold text-white/30 bg-white/5 px-2.5 py-1 rounded-full">
+                      {seasonEpisodes.length} eps
+                    </span>
+                  </div>
+
+                  {/* Season selector */}
+                  {content.seasons > 1 && (
+                    <select
+                      value={seasonNum}
+                      onChange={(e) => setSeasonNum(Number(e.target.value))}
+                      className="w-full bg-white/5 text-white text-xs font-bold px-4 py-3 rounded-xl border border-white/10 outline-none appearance-none cursor-pointer hover:border-white/20 transition-all"
+                      style={{ colorScheme: 'dark' }}
+                    >
+                      {Array.from({ length: content.seasons }).map((_, i) => (
+                        <option key={i + 1} value={i + 1}>{i + 1}ª TEMPORADA</option>
+                      ))}
+                    </select>
                   )}
-                  
-                  {/* Search EP */}
+
+                  {/* Search */}
                   <form onSubmit={handleSearchSubmit} className="relative">
-                    <input 
-                      type="text" 
+                    <input
+                      type="number"
+                      min={1}
                       value={searchEp}
                       onChange={(e) => setSearchEp(e.target.value)}
-                      placeholder="Ir para o episódio..."
-                      className="w-full bg-[#0A0A16] border border-white/10 rounded-[16px] text-white text-[13px] font-bold placeholder-[#5C6370] outline-none pl-5 pr-12 py-4 transition-all focus:border-[#FF3366]/50"
+                      placeholder="Ir para episódio..."
+                      className="w-full bg-white/5 border border-white/10 rounded-xl text-white text-xs font-medium placeholder-white/25 outline-none pl-4 pr-10 py-3 focus:border-white/25 transition-all [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5C6370] hover:text-white transition-colors p-1">
+                    <button
+                      type="submit"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                    >
                       <Search className="size-4" />
                     </button>
                   </form>
                 </div>
 
-                {/* List Items */}
-                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent py-4 px-3">
-                  {content.episodes
-                    .filter((ep: any) => (ep.season || 1) === seasonNum)
-                    .map((ep: any) => {
-                    const isActive = ep.number === epNum && (ep.season || 1) === seasonNum;
-                    return (
-                       <button 
-                         key={ep.id}
-                         onClick={() => setEpNum(ep.number)}
-                         className={`w-full flex items-center gap-4 px-4 py-4 mb-2 rounded-[20px] transition-all group relative overflow-hidden ${isActive ? (isAnimeContent ? 'bg-[#FF3366]/10 border border-[#FF3366]/30 shadow-[0_0_20px_rgba(255,51,102,0.1)]' : 'bg-[#8F44FF]/10 border border-[#8F44FF]/30') : 'hover:bg-white/5 border border-transparent'}`}
-                       >
-                         {isActive && <div className="absolute left-0 top-2 bottom-2 w-1 bg-[#FF3366] rounded-full shadow-[0_0_10px_#FF3366]" />}
-                         
-                         <div className="relative w-24 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10 group-hover:border-white/20 transition-colors">
-                           <Image src={ep.thumbnailUrl || content.heroImage} alt="Thumb" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                           <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
-                           {isActive && <div className="absolute inset-0 bg-[#FF3366]/20 flex items-center justify-center"><Play className="size-6 fill-white text-white" /></div>}
-                         </div>
-
-                         <div className="flex flex-col items-start min-w-0 flex-1">
-                           <span className={`text-[11px] font-black tracking-widest uppercase mb-1 ${isActive ? 'text-[#FF3366]' : 'text-[#5C6370]'}`}>EP {ep.number.toString().padStart(2, '0')}</span>
-                           <h3 className={`text-[13px] line-clamp-1 transition-colors ${isActive ? 'text-white font-bold' : 'text-[#8A93A6] font-medium group-hover:text-white'}`}>
-                             {ep.title || 'Episódio sem título'}
-                           </h3>
-                           <p className="text-[10px] text-[#5C6370] font-bold mt-1.5 uppercase">{ep.duration || '24 min'}</p>
-                         </div>
-                       </button>
-                    )
-                  })}
+                {/* Episodes list */}
+                <div
+                  ref={episodesContainerRef}
+                  className="flex-1 overflow-y-auto py-3 px-3 space-y-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+                >
+                  {seasonEpisodes.map((ep: any) => (
+                    <EpisodeCard
+                      key={ep.id}
+                      ep={ep}
+                      isActive={ep.number === epNum && (ep.season || 1) === seasonNum}
+                      heroImage={content.heroImage}
+                      isAnime={isAnimeContent}
+                      onClick={() => setEpNum(ep.number)}
+                    />
+                  ))}
                 </div>
+
               </div>
-           </div>
-         )}
-         
-       </div>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile: toggle sidebar button */}
+        {!isMovie && content.episodes && (
+          <button
+            onClick={() => setShowSidebar(!showSidebar)}
+            className={`xl:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-full shadow-2xl text-sm font-black transition-all ${showSidebar ? 'text-white' : 'bg-white/10 text-white/70 border border-white/20'
+              }`}
+            style={showSidebar ? { backgroundColor: accent, boxShadow: `0 8px 32px ${accentShadow}` } : {}}
+          >
+            <ListVideo className="size-4" />
+            {showSidebar ? 'Fechar' : 'Episódios'}
+          </button>
+        )}
+
+      </div>
     </main>
   );
 }
 
+// ─── Page export ──────────────────────────────────────────────────────────────
+
 export default function PlayerPage() {
   const params = useParams();
   const slug = params.slug as string;
-  
   if (!slug) return null;
-
   return (
-    <Suspense fallback={
-       <div className="min-h-screen bg-[#050510] flex items-center justify-center">
-         <div className="w-12 h-12 rounded-full border-4 border-[#FF3366] border-t-transparent animate-spin"></div>
-       </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#060610] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full border-[3px] border-[#FF3366] border-t-transparent animate-spin" />
+        </div>
+      }
+    >
       <PlayerContent slug={slug} />
     </Suspense>
   );

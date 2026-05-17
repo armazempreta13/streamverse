@@ -4,27 +4,44 @@ export const getTmdbImage = (path: string | null | undefined, size = 'w500') => 
   return `https://image.tmdb.org/t/p/${size}${path}`;
 };
 
-const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY || "e977149fcbba55f76536674e77f0a186";
-
 export async function fetchFromTmdb(endpoint: string, params: Record<string, string> = {}, silent = false) {
-  if (!TMDB_API_KEY || TMDB_API_KEY === 'undefined') {
-    if (!silent) console.warn('TMDB: Missing API Key.');
-    return null;
-  }
-  const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
-  url.searchParams.append('api_key', TMDB_API_KEY);
-  url.searchParams.append('language', 'pt-BR');
-  Object.entries(params).forEach(([key, value]) => url.searchParams.append(key, value));
-  try {
-    const response = await fetch(url.toString(), { next: { revalidate: 3600 } });
-    if (!response.ok) {
-      if (!silent) console.error(`TMDB API Error: ${response.status} ${response.statusText}`);
+  const isServer = typeof window === 'undefined';
+
+  if (isServer) {
+    // No servidor: Chama diretamente o TMDb
+    const key = process.env.TMDB_API_KEY || "e977149fcbba55f76536674e77f0a186";
+    const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
+    url.searchParams.append('api_key', key);
+    url.searchParams.append('language', 'pt-BR');
+    Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+    try {
+      const response = await fetch(url.toString(), { next: { revalidate: 3600 } });
+      if (!response.ok) {
+        if (!silent) console.error(`TMDB API Error: ${response.status}`);
+        return null;
+      }
+      return response.json();
+    } catch (error) {
+      if (!silent) console.error("TMDB Fetch Error:", error);
       return null;
     }
-    return response.json();
-  } catch (error) {
-    console.error("TMDB Fetch Error:", error);
-    return null;
+  } else {
+    // No cliente: Chama nosso proxy interno seguro
+    const url = new URL(`/api/tmdb${endpoint}`, window.location.origin);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+    try {
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        if (!silent) console.error(`TMDB Proxy Error: ${response.status}`);
+        return null;
+      }
+      return response.json();
+    } catch (error) {
+      if (!silent) console.error("TMDB Proxy Fetch Error:", error);
+      return null;
+    }
   }
 }
 

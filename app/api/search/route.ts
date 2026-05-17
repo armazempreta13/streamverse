@@ -1,91 +1,121 @@
-import { NextResponse } from 'next/server';
-import {
-  fetchFromTmdb, searchTmdb, formatTmdbToCard,
-  getAnime, getPopular, getTrending, getTopRated,
-  getRecentReleases, getTopAnime, getByGenre
-} from '@/lib/tmdb-service';
+/**
+ * /api/search — Unified search endpoint
+ * Delegates to /api/catalog internally. Adds rate-limiting and sanitization.
+ */
 
-const SORT_TO_ENDPOINT: Record<string, (type: string, page: number) => Promise<any[]>> = {
-  popular: (type, page) => getPopular(type as 'movie' | 'tv', page),
-  trending: (type, page) => type === 'anime'
-    ? getAnime(page)
-    : fetchFromTmdb(`/trending/${type === 'movie' ? 'movie' : 'tv'}/week`, { page: String(page) }).then(d => d?.results || []),
-  top_rated: (type, page) => getTopRated(type as 'movie' | 'tv', page),
-  recent: (type, page) => getRecentReleases(type as 'movie' | 'tv', page),
-};
+import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, isSuspiciousRequest } from '@/lib/rate-limit';
+import { withCache } from '@/lib/cache';
+import { mapList, mapItem } from '@/lib/tmdb-mapper';
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const queryStr = searchParams.get('q') || '';
-  const type = searchParams.get('type') || ''; // movie, tv, anime
-  const sort = searchParams.get('sort') || '';
-  const genre = searchParams.get('genre') || '';
-  const page = parseInt(searchParams.get('page') || '1');
+const TMDB_KEY = process.env.TMDB_API_KEY || process.env.TMDB_ACCESS_TOKEN || 'e977149fcbba55f76536674e77f0a186';
+
+async function searchTmdb(q: string, mediaType: string, page: number) {
+  const endpoint = mediaType === 'movie' ? '/search/movie'
+    : mediaType === 'tv' ? '/search/tv'
+    : '/search/multi';
+
+  const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
+  url.searchParams.set('api_key', TMDB_KEY);
+  url.searchParams.set('language', 'pt-BR');
+  url.searchParams.set('query', q);
+  url.searchParams.set('page', String(page));
+
+  const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function browseByGenre(mediaType: 'movie' | 'tv', genre: string, sort: string, page: number) {
+  const url = new URL(`https://api.themoviedb.org/3/discover/${mediaType}`);
+  url.searchParams.set('api_key', TMDB_KEY);
+  url.searchParams.set('language', 'pt-BR');
+  url.searchParams.set('with_genres', genre);
+  url.searchParams.set('sort_by', sort || 'popularity.desc');
+  url.searchParams.set('page', String(page));
+  const res = await fetch(url.toString(), { next: { revalidate: 21600 } });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function browseAnime(sort: string, page: number) {
+  const sortField = sort === 'top_rated' ? 'vote_average.desc'
+    : sort === 'recent' ? 'first_air_date.desc'
+    : 'popularity.desc';
+  const url = new URL('https://api.themoviedb.org/3/discover/tv');
+  url.searchParams.set('api_key', TMDB_KEY);
+  url.searchParams.set('language', 'pt-BR');
+  url.searchParams.set('with_genres', '16');
+  url.searchParams.set('with_original_language', 'ja');
+  url.searchParams.set('sort_by', sortField);
+  url.searchParams.set('page', String(page));
+  if (sort === 'top_rated') url.searchParams.set('vote_count.gte', '200');
+  const res = await fetch(url.toString(), { next: { revalidate: 21600 } });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function GET(req: NextRequest) {
+  if (isSuspiciousRequest(req)) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+  }
+
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+  const rl = checkRateLimit(ip, '/search');
+  if (!rl.allowed) {
+    return NextResponse.json({ success: false, error: 'Rate limit exceeded.' }, {
+      status: 429,
+      headers: { 'Retry-After': String(rl.resetIn) },
+    });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const rawQ    = (searchParams.get('q') || '').substring(0, 120).trim();
+  const type    = searchParams.get('type') || '';
+  const sort    = searchParams.get('sort') || 'popular';
+  const genre   = (searchParams.get('genre') || '').replace(/\D/g, '');
+  const rawPage = parseInt(searchParams.get('page') || '1');
+  const page    = Math.min(Math.max(rawPage, 1), 50);
+
+  // Map type string to TMDb media type
+  const mediaType = type === 'movie' ? 'movie' : type === 'tv' || type === 'series' ? 'tv' : 'multi';
 
   try {
-    let results: any[] = [];
+    let raw: any = null;
 
-    if (queryStr) {
-      // Search TMDB
-      const tmdbRes = await searchTmdb(queryStr, page);
-      results = tmdbRes
-        .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv' || !item.media_type)
-        .map((item: any) => {
-          const formatted = formatTmdbToCard(item);
-          return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb' };
-        });
-      if (type) {
-        results = results.filter(item => {
-          if (type === 'anime') return item.isAnime;
-          if (type === 'movie') return item.type === 'movie';
-          return item.type === 'tv';
-        });
-      }
+    if (rawQ) {
+      const cacheKey = `search:${rawQ}:${mediaType}:${page}`;
+      raw = await withCache(cacheKey, 3600, () => searchTmdb(rawQ, mediaType, page));
     } else if (genre) {
-      // Genre-based browse
-      const mediaType = type === 'movie' ? 'movie' : 'tv';
-      const data = await getByGenre(mediaType, genre, page);
-      results = data.map((item: any) => {
-        const formatted = formatTmdbToCard({ ...item, media_type: mediaType });
-        return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb' };
-      });
+      const mtype = type === 'movie' ? 'movie' : 'tv';
+      const cacheKey = `browse:genre:${mtype}:${genre}:${sort}:${page}`;
+      raw = await withCache(cacheKey, 21600, () => browseByGenre(mtype as 'movie' | 'tv', genre, sort, page));
     } else if (type === 'anime') {
-      // Anime catalog
-      const sortFn = sort === 'top_rated'
-        ? () => getTopAnime(page)
-        : sort === 'recent'
-        ? () => getRecentReleases('tv', page)
-        : () => getAnime(page);
-      const data = await sortFn();
-      results = data.map((item: any) => {
-        const formatted = formatTmdbToCard({ ...item, media_type: 'tv' });
-        return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb', isAnime: true };
-      });
-    } else if (type) {
-      // Movie/Series catalog with optional sort
-      const mediaType = type === 'movie' ? 'movie' : 'tv';
-      const sortFn = SORT_TO_ENDPOINT[sort] || ((t, p) => getPopular(t as 'movie' | 'tv', p));
-      const data = await sortFn(mediaType, page);
-      results = data.map((item: any) => {
-        const formatted = formatTmdbToCard({ ...item, media_type: mediaType });
-        return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb' };
-      });
+      const cacheKey = `browse:anime:${sort}:${page}`;
+      raw = await withCache(cacheKey, 21600, () => browseAnime(sort, page));
     } else {
-      // General trending (default)
-      const endpoint = sort === 'trending' ? '/trending/all/week' : '/trending/all/day';
-      const data = await fetchFromTmdb(endpoint, { page: String(page) });
-      results = (data?.results || []).map((item: any) => {
-        const formatted = formatTmdbToCard(item);
-        return { ...formatted, href: `/tmdb/${formatted.type}/${formatted.id}`, source: 'tmdb' };
-      });
+      // Fallback: general trending
+      const url = new URL('https://api.themoviedb.org/3/trending/all/week');
+      url.searchParams.set('api_key', TMDB_KEY);
+      url.searchParams.set('language', 'pt-BR');
+      url.searchParams.set('page', String(page));
+      const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+      raw = res.ok ? await res.json() : null;
+    }
+
+    const safe = mapList(raw);
+
+    // Filter by anime if needed
+    if (type === 'anime' && rawQ) {
+      safe.results = safe.results.filter(r => r.originalLanguage === 'ja');
     }
 
     // Filter out items without images
-    results = results.filter(r => r.imageUrl && !r.imageUrl.includes('picsum'));
+    safe.results = safe.results.filter(r => r.posterPath || r.backdropPath);
 
-    return NextResponse.json({ success: true, results });
-  } catch (error: any) {
-    console.error('API Search Error:', error);
+    return NextResponse.json({ success: true, ...safe });
+  } catch (err) {
+    console.error('[/api/search] Error:', err instanceof Error ? err.message : 'unknown');
     return NextResponse.json({ success: false, error: 'Erro ao buscar conteúdos.' }, { status: 500 });
   }
 }

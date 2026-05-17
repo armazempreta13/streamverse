@@ -92,16 +92,36 @@ service cloud.firestore {
     }
 
     // Comentários: qualquer pessoa pode ler e criar (sem login)
+    // Escrita ALTAMENTE validada para evitar spam, XSS e abuso
     match /comments/{commentId} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasAll(['contentId', 'userName', 'text', 'createdAt'])
-                    && request.resource.data.text is string
-                    && request.resource.data.text.size() > 0
-                    && request.resource.data.text.size() < 2000
-                    && request.resource.data.userName is string
-                    && request.resource.data.userName.size() > 0;
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+      allow create: if
+        request.resource.data.keys().hasAll(['contentId', 'userName', 'text', 'createdAt'])
+        && request.resource.data.keys().size() <= 8
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() < 1200
+        && request.resource.data.userName is string
+        && request.resource.data.userName.size() > 0
+        && request.resource.data.userName.size() < 60
+        && request.resource.data.contentId is string
+        && request.resource.data.contentId.size() > 0
+        && request.resource.data.contentId.size() < 128
+        && request.resource.data.createdAt == request.time
+        // Prevent likes manipulation on create
+        && request.resource.data.get('likes', 0) == 0;
+
+      // Allow only likes field to be updated, increment by exactly 1
+      allow update: if
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+        && request.resource.data.likes is int
+        && (request.resource.data.likes == resource.data.likes + 1
+            || request.resource.data.likes == resource.data.likes - 1)
+        && request.resource.data.likes >= 0
+        && request.resource.data.likes <= 100000;
+
       allow delete: if false;
     }
   }
 }
+

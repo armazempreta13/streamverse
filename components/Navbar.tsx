@@ -29,6 +29,7 @@ export function Navbar() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const searchRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -259,9 +260,78 @@ export function Navbar() {
             </div>
           )}
         </div>
-        <button className="sm:hidden text-[#8A93A6] hover:text-white relative transition-colors">
-            <Search className="size-[20px]" />
+        <button 
+          onClick={() => setShowMobileMenu(true)}
+          className="md:hidden text-[#8A93A6] hover:text-white relative transition-colors p-2 -mr-2"
+        >
+            <div className="flex flex-col gap-1.5 items-end justify-center w-6 h-6">
+              <span className="w-5 h-[2px] bg-current rounded-full" />
+              <span className="w-4 h-[2px] bg-current rounded-full" />
+              <span className="w-6 h-[2px] bg-current rounded-full" />
+            </div>
         </button>
+
+        {/* Mobile Menu Overlay */}
+        {showMobileMenu && (
+          <div className="fixed inset-0 z-[500] flex md:hidden">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)} />
+            <div className="relative ml-auto w-[280px] h-full bg-[#0A0A16] border-l border-white/10 shadow-2xl flex flex-col p-6 animate-in slide-in-from-right-full duration-300">
+              <div className="flex items-center justify-between mb-8">
+                <span className="text-sm font-bold text-[#8A93A6] uppercase tracking-widest">Menu</span>
+                <button onClick={() => setShowMobileMenu(false)} className="p-2 -mr-2 text-white/60 hover:text-white">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              {/* Mobile Search */}
+              <div className="relative mb-8">
+                <div className="flex items-center bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus-within:border-[#8F44FF]">
+                  <Search className="size-[18px] text-[#8A93A6] mr-2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch(e);
+                        setShowMobileMenu(false);
+                      }
+                    }}
+                    placeholder="Buscar..."
+                    className="bg-transparent border-none outline-none text-[15px] text-white w-full placeholder:text-[#8A93A6]"
+                  />
+                </div>
+              </div>
+
+              {/* Mobile Navigation Links */}
+              <nav className="flex flex-col gap-2">
+                {menuItems.map((item) => {
+                  const isActive = activeItem === item.name;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => { setActiveItem(item.name); setShowMobileMenu(false); }}
+                      className={clsx(
+                        "text-[18px] font-bold px-4 py-3 rounded-xl transition-all",
+                        isActive
+                          ? "bg-[#8F44FF]/20 text-[#A661FF]"
+                          : "text-white/70 hover:bg-white/5 hover:text-white"
+                      )}
+                    >
+                      {item.name}
+                    </Link>
+                  );
+                })}
+                {isAdmin && (
+                  <Link href="/admin" onClick={() => setShowMobileMenu(false)} className="text-[18px] font-bold px-4 py-3 rounded-xl text-[#A661FF] hover:bg-white/5 transition-all mt-4 border border-[#8F44FF]/30">
+                    Admin
+                  </Link>
+                )}
+              </nav>
+            </div>
+          </div>
+        )}
 
         {/* Notifications */}
         <NotificationDropdown />

@@ -82,7 +82,7 @@ function getAdminDb() {
   return getFirestore(adminApp);
 }
 
-const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY || 'e977149fcbba55f76536674e77f0a186';
+const TMDB_API_KEY = process.env.TMDB_API_KEY || process.env.TMDB_ACCESS_TOKEN || 'e977149fcbba55f76536674e77f0a186';
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 
 async function tmdbFetch(endpoint: string, params: Record<string, string> = {}): Promise<any> {

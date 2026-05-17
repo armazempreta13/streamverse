@@ -11,9 +11,11 @@ import { ContentData } from '@/lib/data';
 interface ContentTabsProps {
   content: ContentData;
   related: ContentData[];
+  onEpisodeSelect?: (ep: any) => void;
+  activeEpisodeNumber?: number;
 }
 
-export function ContentTabs({ content, related }: ContentTabsProps) {
+export function ContentTabs({ content, related, onEpisodeSelect, activeEpisodeNumber }: ContentTabsProps) {
   const TABS = content.type === 'movie' 
     ? ['Sobre', 'Detalhes', 'Elenco', 'Avaliações'] 
     : ['Episódios', 'Sobre', 'Detalhes', 'Elenco', 'Avaliações'];
@@ -67,37 +69,62 @@ export function ContentTabs({ content, related }: ContentTabsProps) {
                 </select>
               </div>
               <div className="flex flex-col gap-4">
-                {content.episodes.map((ep) => (
-                  <div key={ep.id} className="group flex flex-col sm:flex-row gap-5 sm:items-center p-4 rounded-[16px] hover:bg-white/5 transition-all cursor-pointer border border-transparent hover:border-white/10">
-                    <div className="relative w-full sm:w-[200px] aspect-video sm:h-auto shrink-0 rounded-[12px] overflow-hidden shadow-lg">
-                      <Image src={ep.thumbnail} alt={ep.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" />
-                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-                          <Play className="size-5 text-white fill-white ml-1" />
+                {content.episodes.map((ep) => {
+                  const isActive = activeEpisodeNumber === ep.number;
+                  return (
+                    <div 
+                      key={ep.id} 
+                      onClick={() => onEpisodeSelect?.(ep)}
+                      className={clsx(
+                        "group flex flex-col sm:flex-row gap-5 sm:items-center p-4 rounded-[20px] transition-all cursor-pointer border",
+                        isActive 
+                          ? "bg-[#8F44FF]/10 border-[#8F44FF]/40 shadow-[0_0_20px_rgba(143,68,255,0.1)]" 
+                          : "hover:bg-white/5 border-transparent hover:border-white/10"
+                      )}
+                    >
+                      <div className="relative w-full sm:w-[220px] aspect-video sm:h-auto shrink-0 rounded-[16px] overflow-hidden shadow-lg border border-white/5">
+                        <Image src={ep.thumbnail} alt={ep.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" />
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                          <div className={clsx(
+                            "w-12 h-12 rounded-full backdrop-blur-md border flex items-center justify-center transition-all scale-75 group-hover:scale-100 shadow-[0_0_20px_rgba(0,0,0,0.5)]",
+                            isActive ? "bg-[#8F44FF] border-[#8F44FF]" : "bg-white/10 border-white/20 opacity-0 group-hover:opacity-100"
+                          )}>
+                            <Play className="size-5 text-white fill-white ml-1" />
+                          </div>
+                        </div>
+                        {ep.progress !== undefined && (
+                           <div className="absolute bottom-0 left-0 w-full h-[4px] bg-black/60">
+                             <div className="h-full bg-[#8F44FF] transition-all" style={{ width: `${ep.progress}%` }} />
+                           </div>
+                        )}
+                      </div>
+                      <div className="flex-1 py-1">
+                        <div className="flex justify-between items-center gap-4 mb-2">
+                          <h4 className={clsx(
+                            "font-display font-bold text-[18px] line-clamp-1 transition-colors",
+                            isActive ? "text-white" : "text-[#D1D5DB] group-hover:text-white"
+                          )}>
+                            {ep.number}. {ep.title}
+                          </h4>
+                          <span className="text-[#8A93A6] text-[13px] shrink-0 font-bold bg-white/5 px-3 py-1 rounded-full uppercase tracking-wider">{ep.duration}</span>
+                        </div>
+                        <p className="text-[#8A93A6] text-[14px] line-clamp-2 mt-2 group-hover:text-[#D1D5DB] transition-colors leading-[1.6]">
+                          {ep.description || "Nenhuma descrição disponível para este episódio."}
+                        </p>
+                      </div>
+                      <div className="hidden sm:flex shrink-0 w-16 justify-center">
+                        <div className={clsx(
+                          "w-12 h-12 rounded-full border flex items-center justify-center transition-all shadow-none hover:scale-110",
+                          isActive 
+                            ? "bg-[#8F44FF] border-[#8F44FF] text-white shadow-[0_0_20px_rgba(143,68,255,0.4)]" 
+                            : "bg-white/5 border-white/10 group-hover:bg-[#8F44FF] group-hover:border-[#8F44FF] text-white"
+                        )}>
+                          <Play className="size-5 fill-current ml-1" />
                         </div>
                       </div>
-                      {ep.progress !== undefined && (
-                         <div className="absolute bottom-0 left-0 w-full h-[4px] bg-black/60">
-                           <div className="h-full bg-[#8F44FF] transition-all" style={{ width: `${ep.progress}%` }} />
-                         </div>
-                      )}
                     </div>
-                    <div className="flex-1 py-1">
-                      <div className="flex justify-between items-center gap-4 mb-2">
-                        <h4 className="text-white font-display font-bold text-[18px] line-clamp-1">{ep.number}. {ep.title}</h4>
-                        <span className="text-[#8A93A6] text-[13px] shrink-0 font-medium bg-white/5 px-2.5 py-1 rounded-full">{ep.duration}</span>
-                      </div>
-                      <p className="text-[#8A93A6] text-[14px] line-clamp-2 mt-2 group-hover:text-[#D1D5DB] transition-colors leading-[1.6]">
-                        {ep.description}
-                      </p>
-                    </div>
-                    <div className="hidden sm:flex shrink-0 w-16 justify-center">
-                      <Link href={`/watch/${content.slug}?ep=${ep.number}`} className="w-12 h-12 rounded-full bg-white/5 group-hover:bg-[#8F44FF] border border-white/10 group-hover:border-[#8F44FF] flex items-center justify-center text-white transition-all shadow-none group-hover:shadow-[0_0_20px_rgba(143,68,255,0.4)] hover:scale-110">
-                        <Play className="size-5 fill-current ml-1" />
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : (

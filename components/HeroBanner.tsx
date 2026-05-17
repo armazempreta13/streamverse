@@ -5,8 +5,64 @@ import { Play, Info, ChevronRight, Plus, Star, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import clsx from 'clsx';
+import { getTmdbImage } from '@/lib/tmdb-service';
 import { siteConfig } from '@/config/site';
-import { getTrending, getAnime, formatTmdbToCard, fetchFromTmdb, getTmdbImage, getDetails, searchTmdb } from '@/lib/tmdb-service';
+
+async function fetchHeroItems(category?: string): Promise<any[]> {
+  let items: any[] = [];
+
+  if (siteConfig.hero?.customTitles?.length && !category) {
+    // Search each custom title through the secure catalog API
+    const results = await Promise.all(
+      siteConfig.hero.customTitles.map(async (q) => {
+        const res = await fetch(`/api/catalog?type=search&q=${encodeURIComponent(q)}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return (data?.results || []).find((r: any) => r.backdropPath) || data?.results?.[0] || null;
+      })
+    );
+    items = results.filter(Boolean);
+  }
+
+  if (items.length < 5) {
+    const cat = category === 'anime' ? 'anime' : category === 'movie' ? 'movie' : category === 'series' ? 'series' : 'all';
+    const apiType = cat === 'anime' ? 'popular' : 'trending';
+    const res = await fetch(`/api/catalog?type=${apiType}&category=${cat}`);
+    if (res.ok) {
+      const data = await res.json();
+      const existingIds = new Set(items.map((i: any) => i.id));
+      const extra = (data?.results || []).filter((r: any) => !existingIds.has(r.id));
+      items = [...items, ...extra].slice(0, 5);
+    }
+  }
+
+  return items.slice(0, 5);
+}
+
+async function enrichWithImages(items: any[]): Promise<any[]> {
+  return Promise.all(
+    items.map(async (item) => {
+      try {
+        const type = item.type === 'movie' ? 'movie' : 'tv';
+        const res = await fetch(`/api/catalog?type=images&id=${item.id}&category=${type}`);
+        if (!res.ok) return { ...item, alternativeBackdrops: [item.heroImage] };
+        const images = await res.json();
+        const bestLogo = images?.logos?.find((l: any) => l.iso639 === 'pt')
+          || images?.logos?.find((l: any) => l.iso639 === 'en')
+          || images?.logos?.[0];
+        const backdrops = (images?.backdrops || []).slice(0, 4).map((b: any) => getTmdbImage(b.filePath, 'original'));
+        const allBackdrops = [item.heroImage, ...backdrops].filter((v, i, a) => v && a.indexOf(v) === i).slice(0, 4);
+        return {
+          ...item,
+          logoUrl: bestLogo ? getTmdbImage(bestLogo.filePath, 'w500') : undefined,
+          alternativeBackdrops: allBackdrops.length > 1 ? allBackdrops : [item.heroImage],
+        };
+      } catch {
+        return { ...item, alternativeBackdrops: [item.heroImage] };
+      }
+    })
+  );
+}
 
 // Keyframes injetados uma vez no DOM
 const BREATH_STYLE = `
@@ -51,104 +107,53 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
     switch (index) {
       case 0:
         // Agressiva, Industrial, Impactante (Ex: The Boys, Ação)
-        return 'font-bebas tracking-wide text-[54px] sm:text-[76px] md:text-[96px] lg:text-[130px] leading-[0.85] uppercase scale-y-110 origin-bottom';
+        return 'font-bebas tracking-wide text-[54px] sm:text-[76px] md:text-[96px] lg:text-[130px] leading-[0.85] uppercase scale-y-110 origin-bottom break-words hyphens-auto';
       case 1:
         // Elegante, Medieval, Drama (Ex: House of the Dragon)
-        return 'font-cinzel font-bold tracking-tight text-[40px] sm:text-[52px] md:text-[68px] lg:text-[84px] leading-[0.95] uppercase drop-shadow-2xl';
+        return 'font-cinzel font-bold tracking-tight text-[40px] sm:text-[52px] md:text-[68px] lg:text-[84px] leading-[0.95] uppercase drop-shadow-2xl break-words hyphens-auto';
       case 2:
         // Moderna, Sci-fi, Anime Premium (Ex: Solo Leveling)
-        return 'font-outfit font-black tracking-tight text-[44px] sm:text-[60px] md:text-[76px] lg:text-[94px] leading-[0.95] uppercase';
+        return 'font-outfit font-black tracking-tight text-[44px] sm:text-[60px] md:text-[76px] lg:text-[94px] leading-[0.95] uppercase break-words hyphens-auto';
       case 3:
       default:
         // Blockbuster Clássico, Padrão Robusto (Ex: Vingadores)
-        return 'font-montserrat font-black tracking-tighter text-[46px] sm:text-[60px] md:text-[76px] lg:text-[92px] leading-[0.92] uppercase';
+        return 'font-montserrat font-black tracking-tighter text-[46px] sm:text-[60px] md:text-[76px] lg:text-[92px] leading-[0.92] uppercase break-words hyphens-auto';
     }
   };
 
   useEffect(() => {
-    const fetchHero = async () => {
+    let cancelled = false;
+    const load = async () => {
       try {
-        let top5Items: any[] = [];
+        const rawItems = await fetchHeroItems(category);
+        if (cancelled) return;
 
-        if (category === 'anime') {
-          let animeTrending = await getAnime(1);
-          top5Items = animeTrending.slice(0, 5);
-        } else if (category === 'movie') {
-          let trending = await getTrending('movie');
-          top5Items = trending.slice(0, 5);
-        } else if (category === 'series') {
-          let trending = await getTrending('tv');
-          top5Items = trending.slice(0, 5);
-        } else {
-          // 1. Tentar carregar os títulos personalizados da config
-          if (siteConfig.hero?.customTitles && siteConfig.hero.customTitles.length > 0) {
-            const results = await Promise.all(siteConfig.hero.customTitles.map(async (title) => {
-               try {
-                 const searchRes = await searchTmdb(title);
-                 if (searchRes && searchRes.length > 0) {
-                   // Prioriza resultados que tenham backdrop_path
-                   return searchRes.find((r:any) => r.backdrop_path) || searchRes[0];
-                 }
-               } catch(e) {}
-               return null;
-            }));
-            top5Items = results.filter(Boolean);
-          }
-        }
-
-        // 2. Preencher com Em Alta caso a config tenha menos de 5 filmes
-        if (top5Items.length < 5) {
-          let trending;
-          if (category === 'anime') trending = await getAnime(2);
-          else if (category === 'movie') trending = await getTrending('movie');
-          else if (category === 'series') trending = await getTrending('tv');
-          else trending = await getTrending('all');
-
-          const existingIds = top5Items.map(t => t.id);
-          const needed = 5 - top5Items.length;
-          const extra = trending.filter((t:any) => !existingIds.includes(t.id)).slice(0, needed);
-          top5Items = [...top5Items, ...extra];
-        }
-
-        const top5 = top5Items.slice(0, 5).map((item: any) => {
-            const base = formatTmdbToCard(item);
-            return {
-              ...base,
-              heroImage: base.backdropUrl || base.imageUrl,
-              year: base.date ? base.date.substring(0, 4) : '2024',
-              description: base.overview || 'Acompanhe esta super produção em alta no momento.',
-            };
+        const mapped = rawItems.map((item: any) => {
+          const backdrop = getTmdbImage(item.backdropPath, 'original') || getTmdbImage(item.posterPath, 'w780') || '';
+          const poster = getTmdbImage(item.posterPath, 'w500') || '';
+          return {
+            ...item,
+            heroImage: backdrop || poster,
+            imageUrl: poster || backdrop,
+            backdropUrl: backdrop || poster,
+            posterUrl: poster || backdrop,
+            slug: item.title || '',
+            description: item.overview || 'Acompanhe esta produção em alta no momento.',
+            year: (item.releaseDate || item.firstAirDate || '').substring(0, 4) || '2024',
+            score: item.voteAverage?.toFixed(1),
+          };
         });
 
-        // 3. Buscar Logos e Backdrops ANTES de renderizar
-        const withLogos = await Promise.all(top5.map(async (item: any) => {
-          try {
-            const images = await fetchFromTmdb(`/${item.type}/${item.id}/images`, { include_image_language: 'en,pt,null' });
-            if (images) {
-              const bestLogo = images.logos?.find((l:any) => l.iso_639_1 === 'pt') 
-                            || images.logos?.find((l:any) => l.iso_639_1 === 'en')
-                            || images.logos?.[0];
-              
-              const backdrops = images.backdrops?.slice(0, 5).map((b: any) => getTmdbImage(b.file_path, 'original')) || [];
-              const allBackdrops = [item.heroImage, ...backdrops].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
-
-              return { 
-                ...item, 
-                logoUrl: bestLogo ? getTmdbImage(bestLogo.file_path, 'w500') : undefined,
-                alternativeBackdrops: allBackdrops.length > 1 ? allBackdrops : [item.heroImage]
-              };
-            }
-          } catch (e) {}
-          return { ...item, alternativeBackdrops: [item.heroImage] };
-        }));
-        
-        setHeroContents(withLogos);
-      } catch (e) {
-        console.error(e);
+        if (cancelled) return;
+        const enriched = await enrichWithImages(mapped);
+        if (!cancelled) setHeroContents(enriched);
+      } catch {
+        // Silent
       }
     };
-    fetchHero();
-  }, []);
+    load();
+    return () => { cancelled = true; };
+  }, [category]);
 
   const [backdropIndex, setBackdropIndex] = useState(0);
 
@@ -324,7 +329,7 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
           />
 
           {/* ── Content ── */}
-          <div className="relative z-20 h-full flex flex-col justify-end pb-28 pl-16 sm:pl-28 md:pl-32 lg:pl-36 pr-6 max-w-[900px]">
+          <div className="relative z-20 h-full flex flex-col justify-end pb-24 sm:pb-28 pl-6 sm:pl-24 md:pl-32 lg:pl-36 pr-6 max-w-[900px]">
 
             {/* Badge */}
             <div className={clsx(
