@@ -13,11 +13,18 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 import { ClientProviders } from '@/components/ClientProviders';
 import { SecurityGuard } from '@/components/SecurityGuard';
 import { Footer } from '@/components/Footer';
+import { CursorEngine } from '@/components/cursor-engine/CursorEngine';
+import { SupportSystem } from '@/components/SupportSystem';
 
 export const metadata: Metadata = {
   title: 'StreamVerse - Filmes, Séries e Animes Online em HD',
   description: 'Assista aos melhores filmes, séries e animes online em alta definição no StreamVerse. O melhor catálogo de streaming com lançamentos atualizados diariamente.',
   keywords: 'streaming, filmes online, séries online, assistir animes, streamverse, cinema em casa, filmes hd',
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
   openGraph: {
     title: 'StreamVerse - O Universo do Streaming',
     description: 'A melhor experiência de streaming com catálogo completo de filmes, séries e animes.',
@@ -42,6 +49,8 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           </div>
           <GlobalAmbilight />
           <SecurityGuard />
+          <CursorEngine />
+          <SupportSystem />
         </ClientProviders>
       </body>
     </html>

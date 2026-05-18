@@ -7,6 +7,8 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { getTmdbImage } from '@/lib/tmdb-service';
 import { siteConfig } from '@/config/site';
+import { Loader2, X } from 'lucide-react';
+import { WatchlistButton } from '@/components/WatchlistButton';
 
 async function fetchHeroItems(category?: string): Promise<any[]> {
   let items: any[] = [];
@@ -26,8 +28,7 @@ async function fetchHeroItems(category?: string): Promise<any[]> {
 
   if (items.length < 5) {
     const cat = category === 'anime' ? 'anime' : category === 'movie' ? 'movie' : category === 'series' ? 'series' : 'all';
-    const apiType = cat === 'anime' ? 'popular' : 'trending';
-    const res = await fetch(`/api/catalog?type=${apiType}&category=${cat}`);
+    const res = await fetch(`/api/catalog?type=trending&category=${cat}`);
     if (res.ok) {
       const data = await res.json();
       const existingIds = new Set(items.map((i: any) => i.id));
@@ -50,8 +51,8 @@ async function enrichWithImages(items: any[]): Promise<any[]> {
         const bestLogo = images?.logos?.find((l: any) => l.iso639 === 'pt')
           || images?.logos?.find((l: any) => l.iso639 === 'en')
           || images?.logos?.[0];
-        const backdrops = (images?.backdrops || []).slice(0, 4).map((b: any) => getTmdbImage(b.filePath, 'original'));
-        const allBackdrops = [item.heroImage, ...backdrops].filter((v, i, a) => v && a.indexOf(v) === i).slice(0, 4);
+        const backdrops = (images?.backdrops || []).slice(0, 1).map((b: any) => getTmdbImage(b.filePath, 'w780'));
+        const allBackdrops = [item.heroImage, ...backdrops].filter((v, i, a) => v && a.indexOf(v) === i).slice(0, 2);
         return {
           ...item,
           logoUrl: bestLogo ? getTmdbImage(bestLogo.filePath, 'w500') : undefined,
@@ -89,6 +90,42 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
   const [isHovered, setIsHovered] = useState(false);
   const [prevSlide, setPrevSlide] = useState<number | null>(null);
   const [textVisible, setTextVisible] = useState(true);
+
+  // Trailer Modal State
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+  const [trailerLoading, setTrailerLoading] = useState(false);
+
+  const handleOpenTrailer = async (content: any) => {
+    setShowTrailer(true);
+    setTrailerLoading(true);
+    setTrailerUrl(null);
+    try {
+      const endpoint = `/${content.type}/${content.id}/videos`;
+      const url = new URL(`/api/tmdb${endpoint}`, window.location.origin);
+      const res = await fetch(url.toString());
+      if (res.ok) {
+        const vidData = await res.json();
+        const results = vidData.results || [];
+        const trailer = results.find((v: any) => v.type === 'Trailer' && v.iso_639_1 === 'pt' && v.site === 'YouTube')
+          || results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube')
+          || results.find((v: any) => v.site === 'YouTube')
+          || results[0];
+        
+        if (trailer) {
+          setTrailerUrl(`https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0`);
+        } else {
+          setTrailerUrl('not_found');
+        }
+      } else {
+        setTrailerUrl('not_found');
+      }
+    } catch (e) {
+      setTrailerUrl('not_found');
+    } finally {
+      setTrailerLoading(false);
+    }
+  };
 
   // Helper para decidir a fonte cinematográfica de cada conteúdo
   const getDynamicTypography = (content: any) => {
@@ -129,7 +166,7 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
         if (cancelled) return;
 
         const mapped = rawItems.map((item: any) => {
-          const backdrop = getTmdbImage(item.backdropPath, 'original') || getTmdbImage(item.posterPath, 'w780') || '';
+          const backdrop = getTmdbImage(item.backdropPath, 'w780') || getTmdbImage(item.posterPath, 'w500') || '';
           const poster = getTmdbImage(item.posterPath, 'w500') || '';
           return {
             ...item,
@@ -193,18 +230,18 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
 
   if (heroContents.length === 0) {
     return (
-      <section className="relative w-full h-[80vh] min-h-[600px] lg:h-[90vh] bg-[#050510] overflow-hidden">
+      <section className="relative w-full h-[65vh] min-h-[400px] max-h-[550px] md:max-h-none md:h-[80vh] md:min-h-[600px] lg:h-[90vh] bg-[#050510] overflow-hidden">
         {/* Skeleton shimmer */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent animate-[shimmer_2s_infinite]" />
-        <div className="absolute bottom-24 left-32 flex flex-col gap-4">
+        <div className="absolute bottom-20 left-4 sm:left-32 flex flex-col gap-4">
           <div className="w-20 h-5 rounded bg-white/5 animate-pulse" />
-          <div className="w-80 h-16 rounded bg-white/5 animate-pulse" />
-          <div className="w-56 h-4 rounded bg-white/5 animate-pulse" />
-          <div className="w-96 h-4 rounded bg-white/5 animate-pulse" />
-          <div className="w-72 h-4 rounded bg-white/5 animate-pulse" />
+          <div className="w-64 sm:w-80 h-10 sm:h-16 rounded bg-white/5 animate-pulse" />
+          <div className="w-48 sm:w-56 h-4 rounded bg-white/5 animate-pulse" />
+          <div className="w-72 sm:w-96 h-4 rounded bg-white/5 animate-pulse" />
+          <div className="hidden sm:block w-72 h-4 rounded bg-white/5 animate-pulse" />
           <div className="flex gap-4 mt-4">
-            <div className="w-40 h-12 rounded-lg bg-white/5 animate-pulse" />
-            <div className="w-36 h-12 rounded-lg bg-white/5 animate-pulse" />
+            <div className="w-32 sm:w-40 h-10 sm:h-12 rounded-lg bg-white/5 animate-pulse" />
+            <div className="w-28 sm:w-36 h-10 sm:h-12 rounded-lg bg-white/5 animate-pulse" />
           </div>
         </div>
       </section>
@@ -215,7 +252,7 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
 
   return (
     <section
-      className="relative w-full h-[80vh] min-h-[600px] lg:h-[90vh] bg-transparent overflow-hidden group/carousel"
+      className="relative w-full h-[65vh] min-h-[400px] max-h-[550px] md:max-h-none md:h-[80vh] md:min-h-[600px] lg:h-[90vh] bg-transparent overflow-hidden group/carousel"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -329,7 +366,7 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
           />
 
           {/* ── Content ── */}
-          <div className="relative z-20 h-full flex flex-col justify-end pb-24 sm:pb-28 pl-6 sm:pl-24 md:pl-32 lg:pl-36 pr-6 max-w-[900px]">
+          <div className="relative z-20 h-full flex flex-col justify-end pb-28 sm:pb-36 md:pb-44 lg:pb-48 pl-4 sm:pl-8 md:pl-28 lg:pl-36 pr-4 sm:pr-6 max-w-[900px]">
 
             {/* Badge */}
             <div className={clsx(
@@ -347,11 +384,11 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
             {content.logoUrl ? (
               <div 
                 className={clsx(
-                  'mb-4 lg:mb-8 transition-all duration-700 delay-75 transform origin-left',
+                  'mb-3 lg:mb-8 transition-all duration-700 delay-75 transform origin-left',
                   idx === currentSlide && textVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-4 opacity-0 scale-95'
                 )}
               >
-                <div className="relative w-[280px] sm:w-[400px] md:w-[500px] lg:w-[600px] h-[100px] sm:h-[140px] md:h-[180px] lg:h-[220px]">
+                <div className="relative w-[180px] sm:w-[320px] md:w-[500px] lg:w-[600px] h-[70px] sm:h-[110px] md:h-[180px] lg:h-[220px]">
                   <Image 
                     src={content.logoUrl} 
                     alt={content.title} 
@@ -384,15 +421,9 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
             )}>
               {/* Badges/Tags */}
               <div className="flex items-center gap-3 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mt-2 mb-4">
-                {category === 'anime' ? (
-                  <span className="text-[#FF3366] drop-shadow-[0_0_8px_rgba(255,51,102,0.8)]">EM DESTAQUE</span>
-                ) : (
-                  <>
-                    <span className="text-[#8F44FF]">Em Alta</span>
-                    <span className="w-1 h-1 rounded-full bg-white/30" />
-                    <span className="text-[#8F44FF]">Novo Episódio</span>
-                  </>
-                )}
+                <span className="text-[#8F44FF]">Em Alta</span>
+                <span className="w-1 h-1 rounded-full bg-white/30" />
+                <span className="text-[#8F44FF]">{category === 'anime' ? 'Anime' : 'Novo Episódio'}</span>
               </div>
               {/* Thin decorative line */}
               <span className="hidden md:block flex-1 max-w-[120px] h-px bg-gradient-to-r from-[#A661FF]/40 to-transparent ml-2" />
@@ -400,7 +431,7 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
 
             {/* Description */}
             <p className={clsx(
-              'max-w-[480px] lg:max-w-[560px] text-[#8E97A8] text-[15px] lg:text-[17px] leading-[1.75] mb-10 line-clamp-3 font-normal transition-all duration-500 delay-150 transform',
+              'max-w-[480px] lg:max-w-[560px] text-[#8E97A8] text-[14px] lg:text-[17px] leading-[1.75] mb-6 sm:mb-10 line-clamp-2 sm:line-clamp-3 font-normal transition-all duration-500 delay-150 transform',
               idx === currentSlide && textVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             )}>
               {content.description}
@@ -426,36 +457,35 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
               </Link>
 
               <button
-                className="flex items-center gap-3 text-white/90 px-7 lg:px-8 py-3.5 lg:py-4 rounded-[8px] font-semibold text-[15px] transition-all duration-300 hover:scale-[1.03] active:scale-95 backdrop-blur-md"
+                onClick={() => handleOpenTrailer(content)}
+                className="group/trailer flex items-center gap-3 text-white/60 hover:text-white px-7 lg:px-8 py-3.5 lg:py-4 rounded-[8px] font-semibold text-[15px] transition-all duration-300 hover:scale-[1.03] active:scale-95 backdrop-blur-md"
                 style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.05)',
                 }}
               >
-                <Plus className="size-5 text-white/60 shrink-0" />
-                <span>Minha Lista</span>
+                <svg className="size-5 fill-current shrink-0 text-white/60 group-hover/trailer:text-[#FF3366] transition-colors" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <span>Trailer</span>
               </button>
-
-              <Link
-                href={`/tmdb/${content.type}/${content.id}`}
-                className="group/info flex items-center justify-center w-[52px] h-[52px] lg:w-[54px] lg:h-[54px] rounded-full transition-all duration-300 hover:scale-[1.08] active:scale-95 backdrop-blur-md"
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                }}
-              >
-                <Info className="size-5 text-white/50 group-hover/info:text-white transition-colors duration-200" />
-              </Link>
+              
+              <WatchlistButton 
+                item={{
+                  id: content.id,
+                  type: content.type || 'movie',
+                  title: content.title,
+                  posterUrl: content.posterUrl || content.imageUrl,
+                  backdropUrl: content.backdropUrl
+                }} 
+                theme={category === 'anime' ? 'anime' : 'default'}
+              />
             </div>
           </div>
         </div>
       ))}
 
-      {/* ── Metadata panel — conditionally visible ── */}
+      {/* ── Metadata panel — conditionally visible — hidden on mobile ── */}
       {siteConfig.features.heroGlow && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 transition-all duration-300">
+        <div className="hidden md:block absolute bottom-2 left-1/2 -translate-x-1/2 z-30 transition-all duration-300">
           <div
             className="flex items-center gap-6 px-8 py-3.5 rounded-full"
             style={{
@@ -548,7 +578,7 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
       {/* ── Right arrow ── */}
       <button
         onClick={nextSlide}
-        className="absolute right-6 lg:right-12 top-1/2 -translate-y-1/2 z-30 w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 group-hover/carousel:opacity-100"
+        className="absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 z-30 w-10 h-10 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 group-hover/carousel:opacity-100"
         style={{
           background: 'rgba(5,5,16,0.55)',
           backdropFilter: 'blur(16px)',
@@ -556,8 +586,55 @@ export function HeroBanner({ category }: { category?: 'anime' | 'movie' | 'serie
           boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
         }}
       >
-        <ChevronRight className="size-6 translate-x-0.5" />
+        <ChevronRight className="size-5 lg:size-6 translate-x-0.5" />
       </button>
+
+      {/* ── Trailer Modal ── */}
+      {showTrailer && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-8"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowTrailer(false); }}
+          style={{ background: 'rgba(5,5,16,0.95)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
+        >
+          <div className="relative w-full max-w-5xl animate-in zoom-in-95 fade-in duration-300 bg-[#0A0C10] rounded-[24px] border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-5 rounded-full bg-[#FF3366] shadow-[0_0_12px_#FF3366]" />
+                <p className="text-white font-black text-sm sm:text-base tracking-tight uppercase">Trailer Oficial</p>
+              </div>
+              <button
+                onClick={() => setShowTrailer(false)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="relative w-full bg-black flex items-center justify-center" style={{ paddingBottom: '56.25%' }}>
+              {trailerLoading ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/50">
+                  <Loader2 className="size-8 animate-spin text-[#FF3366]" />
+                  <p className="text-sm font-bold tracking-widest uppercase">Carregando Trailer...</p>
+                </div>
+              ) : trailerUrl && trailerUrl !== 'not_found' ? (
+                <iframe
+                  src={trailerUrl}
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full border-0"
+                />
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/50">
+                  <X className="size-12 opacity-50" />
+                  <p className="text-sm font-bold tracking-widest uppercase">Trailer não disponível</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

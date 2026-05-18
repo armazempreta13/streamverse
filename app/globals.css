@@ -8,6 +8,21 @@
   --color-brand-accent-ruby: #FF3D6E;
   --color-brand-accent-blue: #3B82F6;
   --color-brand-text-muted: #B8C0D0;
+  
+  /* 🍭 Premium Saturation Hierarchy & Candy Color Tokens (Pixar/Disney/Nintendo Style) */
+  --color-candy-pink-soft: #FF75A9;
+  --color-candy-pink-vibrant: #FF1F6D;
+  --color-candy-purple-soft: #B47FFF;
+  --color-candy-purple-vibrant: #822BFF;
+  --color-candy-cyan-soft: #6BE6FF;
+  --color-candy-cyan-vibrant: #00CDFF;
+  --color-candy-yellow-soft: #FFE775;
+  --color-candy-yellow-vibrant: #FFD100;
+  --color-candy-emerald-soft: #61F2C2;
+  --color-candy-emerald-vibrant: #00DF93;
+  --color-candy-orange-soft: #FFB975;
+  --color-candy-orange-vibrant: #FF7C00;
+  
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
   --font-montserrat: var(--font-montserrat);
@@ -26,6 +41,7 @@
   }
 }
 
+/* 🚀 GPU-Accelerated Volumetric Space & Bloom Keyframes */
 @keyframes float-slow {
   0%, 100% { transform: translateY(0) scale(1); }
   50% { transform: translateY(-3%) scale(1.02); }
@@ -46,6 +62,22 @@
   100% { transform: translateX(100%); }
 }
 
+@keyframes star-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.25; filter: drop-shadow(0 0 2px rgba(255, 231, 117, 0.2)); }
+  50% { transform: scale(1.15) rotate(45deg); opacity: 0.85; filter: drop-shadow(0 0 6px rgba(255, 231, 117, 0.7)); }
+}
+
+@keyframes volumetric-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  33% { transform: translate(5%, -4%) scale(1.1); opacity: 0.55; }
+  66% { transform: translate(-3%, 6%) scale(0.95); opacity: 0.45; }
+}
+
+@keyframes button-bloom {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(130, 43, 255, 0.2)); }
+  50% { filter: drop-shadow(0 0 12px rgba(130, 43, 255, 0.6)); }
+}
+
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
@@ -60,6 +92,20 @@
 
 .animate-pulse-slower {
   animation: pulse-slower 12s ease-in-out infinite;
+}
+
+.animate-star-twinkle {
+  animation: star-twinkle 4s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-volumetric-drift {
+  animation: volumetric-drift 20s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-button-bloom {
+  animation: button-bloom 3s ease-in-out infinite;
 }
 
 body {
@@ -79,7 +125,47 @@ html, body {
 }
 
 /* Ensure images don't overflow their containers */
-img, video, iframe {
+img, video {
   max-width: 100%;
   height: auto;
+}
+
+/* ── Mobile touch improvements ── */
+/* Smooth momentum scrolling on iOS */
+.scrollbar-hide,
+[class*="overflow-x-auto"],
+[class*="overflow-y-auto"] {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Remove tap highlight on interactive elements */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Prevent text selection on rapid taps */
+.shrink-0 {
+  user-select: none;
+  -webkit-user-select: none;
+}
+html { scroll-behavior: smooth; }
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

@@ -2,11 +2,14 @@
 
 import React from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { WatchlistProvider } from '@/contexts/WatchlistContext';
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      {children}
+      <WatchlistProvider>
+        {children}
+      </WatchlistProvider>
     </AuthProvider>
   );
 }

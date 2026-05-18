@@ -7,8 +7,8 @@ import { AlertCircle } from 'lucide-react';
 export function Footer() {
   const pathname = usePathname();
   
-  // Esconder o footer em páginas de player para não atrapalhar a imersão
-  if (pathname?.startsWith('/watch')) {
+  // Esconder o footer em páginas de player para não atrapalhar a imersão, e no modo Kids
+  if (pathname?.startsWith('/watch') || pathname?.startsWith('/kids')) {
     return null;
   }
 

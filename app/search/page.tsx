@@ -5,6 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { MediaCard } from '@/components/Cards';
 import { Search as SearchIcon, Film, Tv, Sword } from 'lucide-react';
+import { getTmdbImage } from '@/lib/tmdb-service';
 
 const TYPE_FILTERS = [
   { label: 'Tudo', value: '', icon: null },
@@ -28,18 +29,26 @@ function SearchResults() {
   const typeStr = searchParams.get('type') || '';
   const sortStr = searchParams.get('sort') || '';
   const genreName = searchParams.get('genreName') || '';
+  const genreId = searchParams.get('genre') || '';
 
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [wasCorrected, setWasCorrected] = useState(false);
+  const [correctedQuery, setCorrectedQuery] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResults([]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasMore(true);
-  }, [qStr, typeStr, sortStr]);
+    setWasCorrected(false);
+    setCorrectedQuery('');
+  }, [qStr, typeStr, sortStr, genreId]);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -50,14 +59,33 @@ function SearchResults() {
         if (qStr) url.searchParams.append('q', qStr);
         if (typeStr) url.searchParams.append('type', typeStr);
         if (sortStr) url.searchParams.append('sort', sortStr);
+        if (genreId) url.searchParams.append('genre', genreId);
         url.searchParams.append('page', String(page));
         const res = await fetch(url.toString());
         const data = await res.json();
         if (data.success) {
-          const newResults = data.results;
-          if (newResults.length < 20) setHasMore(false);
-          if (page === 1) setResults(newResults);
-          else setResults(prev => [...prev, ...newResults]);
+          setWasCorrected(data.wasCorrected || false);
+          setCorrectedQuery(data.correctedQuery || '');
+          const newResults = data.results || [];
+          const mapped = newResults.map((item: any) => {
+            const isAnime = item.type === 'tv' && item.originalLanguage === 'ja' && (item.genreIds || []).includes(16);
+            let subtitle = '';
+            if (isAnime) subtitle = 'Anime';
+            else if (item.type === 'movie') subtitle = 'Filme';
+            else if (item.type === 'tv') subtitle = 'Série';
+
+            return {
+              ...item,
+              subtitle,
+              isAnime,
+              imageUrl: getTmdbImage(item.posterPath || item.backdropPath, 'w185') || 'https://picsum.photos/seed/fallback/400/600',
+              href: `/tmdb/${item.type}/${item.id}`,
+            };
+          });
+
+          if (mapped.length < 20) setHasMore(false);
+          if (page === 1) setResults(mapped);
+          else setResults(prev => [...prev, ...mapped]);
         }
       } catch {
         setHasMore(false);
@@ -67,7 +95,7 @@ function SearchResults() {
       }
     };
     fetchResults();
-  }, [qStr, typeStr, sortStr, page]);
+  }, [qStr, typeStr, sortStr, genreId, page]);
 
   const setFilter = (key: string, val: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -97,6 +125,34 @@ function SearchResults() {
           {loading ? 'Buscando conteúdos...' : results.length > 0 ? `${results.length}+ títulos encontrados` : 'Nenhum resultado encontrado'}
         </p>
       </div>
+
+      {wasCorrected && qStr && (
+        <div className="relative group mb-8 animate-in fade-in slide-in-from-top duration-300">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-[#8F44FF] to-pink-600 rounded-2xl blur opacity-20" />
+          <div className="relative p-4 rounded-xl bg-white/5 border border-white/10 text-white/90 text-sm font-semibold flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-[#8F44FF] text-base animate-pulse">✨</span>
+              <span>
+                Entendemos seu termo! Mostrando resultados para{" "}
+                <span className="font-extrabold text-yellow-300 font-display">
+                  "{correctedQuery}"
+                </span>{" "}
+                <span className="text-white/40 font-normal">(Você digitou: "{qStr}")</span>
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                const params = new URLSearchParams(searchParams.toString());
+                params.set('q', correctedQuery);
+                router.push(`/search?${params.toString()}`);
+              }}
+              className="px-4 py-2 rounded-full bg-[#8F44FF]/20 hover:bg-[#8F44FF]/30 text-[#B885FF] font-bold text-xs tracking-wider transition-all border border-[#8F44FF]/30 hover:scale-105"
+            >
+              Confirmar Termo 🍿
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -160,7 +216,7 @@ function SearchResults() {
                   subtitle={item.subtitle || ''}
                   slug={item.slug || ''}
                   href={item.href}
-                  imageUrl={item.imageUrl}
+                  imageUrl={item.imageUrl || 'https://picsum.photos/seed/fallback/400/600'}
                   className="w-full"
                   theme={item.isAnime ? 'anime' : 'default'}
                 />

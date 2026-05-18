@@ -84,7 +84,7 @@ export function useWatchProgress({
   
   // 3. Save to Firestore every 10 seconds watched
   useEffect(() => {
-    if (!user || !contentSlug) return;
+    if (!user || !contentSlug || isActive === false) return;
     
     // Only save if we advanced at least 10 seconds to avoid spam
     if (watchedSeconds - lastSavedSecondsRef.current >= 10 || watchedSeconds === totalSeconds) {

@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, isSuspiciousRequest } from '@/lib/rate-limit';
 import { withCache } from '@/lib/cache';
 import { mapList, mapItem } from '@/lib/tmdb-mapper';
+import { correctSearchQuery } from '@/lib/spellcheck';
 
 const TMDB_KEY = process.env.TMDB_API_KEY || process.env.TMDB_ACCESS_TOKEN || 'e977149fcbba55f76536674e77f0a186';
 
@@ -82,10 +83,17 @@ export async function GET(req: NextRequest) {
 
   try {
     let raw: any = null;
+    let queryToUse = rawQ;
+    let wasCorrected = false;
 
     if (rawQ) {
-      const cacheKey = `search:${rawQ}:${mediaType}:${page}`;
-      raw = await withCache(cacheKey, 3600, () => searchTmdb(rawQ, mediaType, page));
+      const correction = correctSearchQuery(rawQ);
+      if (correction.wasCorrected) {
+        queryToUse = correction.corrected;
+        wasCorrected = true;
+      }
+      const cacheKey = `search:${queryToUse}:${mediaType}:${page}`;
+      raw = await withCache(cacheKey, 3600, () => searchTmdb(queryToUse, mediaType, page));
     } else if (genre) {
       const mtype = type === 'movie' ? 'movie' : 'tv';
       const cacheKey = `browse:genre:${mtype}:${genre}:${sort}:${page}`;
@@ -103,6 +111,7 @@ export async function GET(req: NextRequest) {
       raw = res.ok ? await res.json() : null;
     }
 
+    const isKids = req.cookies.get('kids_active')?.value === 'true' || searchParams.get('kids') === 'true';
     const safe = mapList(raw);
 
     // Filter by anime if needed
@@ -110,10 +119,24 @@ export async function GET(req: NextRequest) {
       safe.results = safe.results.filter(r => r.originalLanguage === 'ja');
     }
 
+    // Filter by kids if active
+    if (isKids) {
+      safe.results = safe.results.filter(r => 
+        (r.genreIds || []).includes(16) || 
+        (r.genreIds || []).includes(10751)
+      );
+    }
+
     // Filter out items without images
     safe.results = safe.results.filter(r => r.posterPath || r.backdropPath);
 
-    return NextResponse.json({ success: true, ...safe });
+    return NextResponse.json({ 
+      success: true, 
+      ...safe, 
+      correctedQuery: queryToUse, 
+      wasCorrected, 
+      originalQuery: rawQ 
+    });
   } catch (err) {
     console.error('[/api/search] Error:', err instanceof Error ? err.message : 'unknown');
     return NextResponse.json({ success: false, error: 'Erro ao buscar conteúdos.' }, { status: 500 });

@@ -139,7 +139,7 @@ export function ContentTabs({ content, related, onEpisodeSelect, activeEpisodeNu
         {activeTab === 'Sobre' && (
           <div className="bg-[#0A0A16] rounded-[24px] p-8 border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in fade-in duration-500">
             <h3 className="font-display font-bold text-[28px] text-white mb-6">Sobre a Obra</h3>
-            <p className="text-[#8A93A6] text-[16px] sm:text-[18px] leading-[1.8] font-medium mb-10">
+            <p className="text-[#8A93A6] text-[15px] sm:text-[18px] leading-[1.8] font-medium mb-10">
               {content.fullSynopsis || content.description}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
@@ -254,7 +254,7 @@ export function ContentTabs({ content, related, onEpisodeSelect, activeEpisodeNu
       </div>
 
       {/* Right Column (Info widget) */}
-      <div className="w-full lg:w-[320px] shrink-0 flex flex-col gap-6">
+      <div className="w-full lg:w-[320px] shrink-0 flex flex-col gap-6 mt-8 lg:mt-0">
         <div className="bg-[#0A0A16] rounded-[24px] p-8 border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <h3 className="font-display font-bold text-[20px] mb-6 text-white border-b border-white/10 pb-4">Resumo Rápido</h3>
           <div className="flex flex-col gap-5 text-[15px]">

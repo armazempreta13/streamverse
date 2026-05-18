@@ -137,7 +137,8 @@ export function ContinueWatching({ theme = 'default' }: ContinueWatchingProps = 
         {/* Layout em linha (flex) com scroll horizontal, alinhado à esquerda */}
         <div 
           ref={scrollRef}
-          className="flex gap-4 sm:gap-5 overflow-x-auto pb-4 scrollbar-hide snap-x -mx-6 sm:-mx-10 px-6 sm:px-10"
+          className="flex gap-4 sm:gap-5 overflow-x-auto pb-4 scrollbar-hide -mx-6 sm:-mx-10 px-6 sm:px-10 snap-x snap-mandatory"
+          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
         >
         {dataList.map((item, idx) => {
           let remainingText = '';
@@ -159,7 +160,7 @@ export function ContinueWatching({ theme = 'default' }: ContinueWatchingProps = 
             <Link
               key={idx}
               href={item.href}
-              className="group cursor-pointer block relative shrink-0 snap-start w-[240px] sm:w-[280px]"
+              className="group cursor-pointer block relative shrink-0 w-[240px] sm:w-[280px] snap-start"
             >
               <div className="bg-[#0A0A16] rounded-xl ring-1 ring-white/5 overflow-hidden transition-all duration-300 group-hover:ring-white/20 group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]">
                 {/* Image Area */}
@@ -200,11 +201,8 @@ export function ContinueWatching({ theme = 'default' }: ContinueWatchingProps = 
                    }`}>
                      {item.title}
                    </h3>
-                   <div className="flex items-center justify-between">
+                   <div className="flex items-center">
                      <p className="text-[#8F8F9D] text-[10px] font-medium tracking-wide uppercase">{item.subtitle}</p>
-                     <p className="text-[#8F8F9D] text-[10px] font-medium">
-                       {remainingText} restantes
-                     </p>
                    </div>
                 </div>
               </div>

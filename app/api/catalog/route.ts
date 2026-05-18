@@ -264,6 +264,29 @@ async function handleGenres(cat: string): Promise<{ genres: { id: number; name: 
   });
 }
 
+async function handleKids(cat: string, rating: string, page: string): Promise<SafeListResponse | null> {
+  const key = `kids:${cat}:${rating}:${page}`;
+  return withCache(key, TTL.popular, async () => {
+    const type = cat === 'series' || cat === 'tv' ? 'tv' : 'movie';
+    const params: Record<string, string> = {
+      sort_by: 'popularity.desc',
+      page,
+      with_genres: '16,10751', // Animation & Family
+    };
+    
+    if (rating === 'G' || rating === 'L') {
+      params.certification_country = 'US';
+      params.certification = 'G';
+    } else if (rating === 'PG' || rating === '10') {
+      params.certification_country = 'US';
+      params.certification = 'PG';
+    }
+    
+    const data = await tmdb(`/discover/${type}`, params);
+    return mapList(data);
+  });
+}
+
 // ─── Route ────────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
@@ -275,6 +298,8 @@ export async function GET(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type') || '';
+  const isKids = searchParams.get('kids') === 'true' || type === 'kids';
+  const kidsRating = req.cookies.get('kids_rating')?.value || searchParams.get('rating') || 'G';
 
   // Rate limiting
   const limit = checkRateLimit(ip, `/${type}`);
@@ -303,32 +328,45 @@ export async function GET(req: NextRequest) {
   let data: any = null;
 
   try {
-    switch (type) {
-      case 'trending':    data = await handleTrending(cat, page); break;
-      case 'popular':     data = await handlePopular(cat, page); break;
-      case 'top_rated':   data = await handleTopRated(cat, page); break;
-      case 'recent':      data = await handleRecent(cat, page); break;
-      case 'upcoming':    data = await handleUpcoming(page); break;
-      case 'discover':    data = await handleDiscover(cat, genre, page); break;
-      case 'search':      if (!q) return NextResponse.json({ error: 'Query required' }, { status: 400 });
-                          data = await handleSearch(q, cat, page); break;
-      case 'details':     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-                          data = await handleDetails(id, cat); break;
-      case 'credits':     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-                          data = await handleCredits(id, cat); break;
-      case 'videos':      if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-                          data = await handleVideos(id, cat); break;
-      case 'images':      if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-                          data = await handleImages(id, cat); break;
-      case 'similar':     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-                          data = await handleSimilar(id, cat); break;
-      case 'seasons':     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-                          data = await handleSeasons(id); break;
-      case 'season_episodes': if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-                          data = await handleSeasonEpisodes(id, season); break;
-      case 'genres':      data = await handleGenres(cat); break;
-      default:
-        return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+    if (isKids && ['trending', 'popular', 'top_rated', 'recent', 'upcoming', 'discover'].includes(type)) {
+      data = await handleKids(cat, kidsRating, page);
+    } else {
+      switch (type) {
+        case 'trending':    data = await handleTrending(cat, page); break;
+        case 'popular':     data = await handlePopular(cat, page); break;
+        case 'top_rated':   data = await handleTopRated(cat, page); break;
+        case 'recent':      data = await handleRecent(cat, page); break;
+        case 'upcoming':    data = await handleUpcoming(page); break;
+        case 'discover':    data = await handleDiscover(cat, genre, page); break;
+        case 'search':      if (!q) return NextResponse.json({ error: 'Query required' }, { status: 400 });
+                            data = await handleSearch(q, cat, page); break;
+        case 'details':     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+                            data = await handleDetails(id, cat);
+                            if (isKids && data) {
+                              const genres = (data as any).genres?.map((g: any) => g.id) || [];
+                              const isKidsSafe = genres.includes(16) || genres.includes(10751);
+                              if (!isKidsSafe) {
+                                return NextResponse.json({ error: 'Unauthorized: Kids Mode Active' }, { status: 403 });
+                              }
+                            }
+                            break;
+        case 'credits':     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+                            data = await handleCredits(id, cat); break;
+        case 'videos':      if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+                            data = await handleVideos(id, cat); break;
+        case 'images':      if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+                            data = await handleImages(id, cat); break;
+        case 'similar':     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+                            data = await handleSimilar(id, cat); break;
+        case 'seasons':     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+                            data = await handleSeasons(id); break;
+        case 'season_episodes': if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+                            data = await handleSeasonEpisodes(id, season); break;
+        case 'genres':      data = await handleGenres(cat); break;
+        case 'kids':        data = await handleKids(cat, kidsRating, page); break;
+        default:
+          return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+      }
     }
 
     if (data === null) {

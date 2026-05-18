@@ -7,8 +7,12 @@ const KANJI = ['鬼', '剣', '夢', '力', '空', '火', '風', '雷', '闇', '�
 
 export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
   const [bgImage, setBgImage] = useState('/bd.png');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Detect mobile once on mount
+    setIsMobile(window.innerWidth < 768);
+
     if (siteConfig.features.dynamicAnimeBackground && backdropUrl) {
       setBgImage(backdropUrl);
     } else {
@@ -24,38 +28,45 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
     return x - Math.floor(x);
   };
 
+  // ── Mobile: render a lightweight version with minimal layers ──
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Only the ambient glow orbs — no animations on mobile */}
+        <div className="absolute top-[-10%] right-[-5%] w-[70%] h-[500px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.05)_0%,_transparent_60%)] mix-blend-screen" />
+        <div className="absolute bottom-[10%] left-[5%] w-[50%] h-[400px] bg-[radial-gradient(ellipse_at_center,_rgba(143,68,255,0.04)_0%,_transparent_60%)] mix-blend-screen" />
+        {/* Cinematic vignette */}
+        <div className="absolute inset-0 z-[8]" style={{
+          background: 'radial-gradient(ellipse at center, transparent 50%, rgba(5,5,16,0.4) 100%)'
+        }} />
+      </div>
+    );
+  }
+
+  // ── Desktop: full premium experience ──
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 0 — Japanese Scenery with Parallax Drift
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 0 — Japanese Scenery with Parallax Drift */}
       <div className="absolute inset-0 z-0">
         <div 
           className="absolute inset-[-30px] bg-cover bg-center bg-no-repeat opacity-[0.08] animate-sceneDrift will-change-transform mix-blend-screen"
-          style={{ 
-            backgroundImage: `url(${bgImage})`
-          }} 
+          style={{ backgroundImage: `url(${bgImage})` }} 
         />
-        {/* Edge fade — melts into darkness at borders */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-transparent to-[#050510]/70" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050510]/80 via-transparent to-[#050510]/80" />
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 1 — Cinematic Ambient Glow Orbs
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 1 — Cinematic Ambient Glow Orbs */}
       <div className="absolute top-[-10%] right-[-5%] w-[70%] h-[700px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.06)_0%,_transparent_60%)] mix-blend-screen animate-glowPulse will-change-[opacity,transform]" />
       <div className="absolute top-[20%] left-[-10%] w-[50%] h-[600px] bg-[radial-gradient(ellipse_at_center,_rgba(143,68,255,0.05)_0%,_transparent_60%)] mix-blend-screen animate-glowPulse2 will-change-[opacity,transform]" />
       <div className="absolute bottom-[10%] right-[10%] w-[40%] h-[500px] bg-[radial-gradient(ellipse_at_center,_rgba(255,51,102,0.04)_0%,_transparent_60%)] mix-blend-screen animate-glowPulse will-change-[opacity,transform]" />
       
-      {/* Warm lantern glow — bottom center, like the lanterns in the image */}
+      {/* Warm lantern glow */}
       <div className="absolute bottom-[25%] left-[35%] w-[200px] h-[200px] bg-[radial-gradient(circle,_rgba(255,160,64,0.08)_0%,_transparent_60%)] animate-lanternGlow will-change-opacity" />
       <div className="absolute bottom-[30%] left-[55%] w-[150px] h-[150px] bg-[radial-gradient(circle,_rgba(255,160,64,0.06)_0%,_transparent_60%)] animate-lanternGlow2 will-change-opacity" />
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 2 — Subtle Dot Grid Texture
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 2 — Subtle Dot Grid Texture */}
       <div className="absolute inset-0 opacity-[0.015] mix-blend-screen" 
         style={{ 
           backgroundImage: 'radial-gradient(rgba(255,255,255,0.25) 0.5px, transparent 0.5px)', 
@@ -63,9 +74,7 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
         }} 
       />
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 3 — Vertical Kanji Watermarks (Poster-style)
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 3 — Vertical Kanji Watermarks */}
       <div className="absolute top-[12%] right-8 opacity-[0.025] mix-blend-screen select-none">
          <span className="text-[120px] leading-[0.8] font-black text-white" style={{ writingMode: 'vertical-rl' }}>呪術廻戦</span>
       </div>
@@ -73,16 +82,12 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
         <span className="text-[100px] font-black text-[#FF3366]" style={{ writingMode: 'vertical-rl' }}>進撃</span>
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 4 — Manga Panel Accent Lines
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 4 — Manga Panel Accent Lines */}
       <div className="absolute top-0 right-[8%] w-[1px] h-[35%] bg-gradient-to-b from-transparent via-[#FF3366]/15 to-transparent" />
       <div className="absolute top-[15%] right-[12%] w-[1px] h-[25%] bg-gradient-to-b from-transparent via-[#8F44FF]/10 to-transparent" />
       <div className="absolute bottom-0 left-[6%] w-[1px] h-[30%] bg-gradient-to-t from-transparent via-[#FF3366]/10 to-transparent" />
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 5 — Floating Kanji Characters
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 5 — Floating Kanji Characters */}
       {KANJI.map((k, i) => (
         <div
           key={i}
@@ -100,13 +105,11 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
         </div>
       ))}
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 6 — Sakura Petals (Realistic Falling)
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 6 — Sakura Petals (reduced to 8 on desktop) */}
       <div className="absolute inset-0 opacity-70 overflow-hidden z-[5]">
-         {[...Array(15)].map((_, i) => {
+         {[...Array(8)].map((_, i) => {
            const size = pseudoRandom(i * 10) * 6 + 4;
-           const isLarge = i < 8;
+           const isLarge = i < 4;
            return (
              <div 
                key={i}
@@ -132,11 +135,9 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
          })}
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 7 — Fireflies / Particles (Anime Night Feel)
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 7 — Fireflies (reduced to 6) */}
       <div className="absolute inset-0 z-[6] pointer-events-none">
-        {[...Array(10)].map((_, i) => (
+        {[...Array(6)].map((_, i) => (
           <div
             key={`ff-${i}`}
             className="absolute rounded-full"
@@ -156,21 +157,15 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
         ))}
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 8 — Shooting Star / Comet (Rare, Cinematic)
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 8 — Shooting Stars */}
       <div className="absolute top-[15%] left-[10%] w-[200px] h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent rotate-[35deg] opacity-0 animate-shootingStar z-[7]" />
       <div className="absolute top-[40%] right-[20%] w-[150px] h-[1px] bg-gradient-to-r from-transparent via-[#FF3366]/50 to-transparent rotate-[25deg] opacity-0 animate-shootingStar2 z-[7]" />
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 9 — Atmospheric Fog / Mist
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 9 — Atmospheric Fog */}
       <div className="absolute bottom-0 left-0 w-full h-[40%] bg-gradient-to-t from-[#0D0015]/30 via-[#0D0015]/10 to-transparent animate-fogDrift z-[3] will-change-transform" />
       <div className="absolute bottom-[5%] left-[-10%] w-[120%] h-[20%] bg-gradient-to-t from-[#1a0025]/20 to-transparent animate-fogDrift2 z-[3] will-change-transform" />
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 10 — Sakura Branch Silhouette (SVG)
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 10 — Sakura Branch SVG */}
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] opacity-[0.035]">
         <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M400 400 C350 350, 300 380, 280 340 C260 300, 290 260, 250 240 C210 220, 230 180, 200 160 C180 145, 190 120, 170 100" 
@@ -194,16 +189,12 @@ export function OtakuAtmosphere({ backdropUrl }: { backdropUrl?: string }) {
         </svg>
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          LAYER 11 — Cinematic Vignette
-          ═══════════════════════════════════════════════ */}
+      {/* LAYER 11 — Cinematic Vignette */}
       <div className="absolute inset-0 z-[8]" style={{
         background: 'radial-gradient(ellipse at center, transparent 50%, rgba(5,5,16,0.4) 100%)'
       }} />
 
-      {/* ═══════════════════════════════════════════════
-          ANIMATIONS
-          ═══════════════════════════════════════════════ */}
+      {/* ANIMATIONS */}
       <style jsx>{`
         @keyframes sakuraFall {
           0% { transform: translate3d(0, -60px, 0) rotate(0deg); }

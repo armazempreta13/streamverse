@@ -89,11 +89,11 @@ export function ContentCarousel({ title, type, category, sortBy = 'recent', card
 
   if (loading) {
     return (
-      <section className="relative px-6 sm:px-10 pb-10 pt-6">
-        <h3 className="text-[20px] font-display font-bold mb-4 text-white opacity-50 tracking-wide">{title}</h3>
-        <div className="flex gap-4 sm:gap-6 overflow-x-hidden pb-4 pt-2 -mx-6 sm:-mx-10 px-6 sm:px-10">
+      <section className="relative px-4 sm:px-10 pb-10 pt-6">
+        <h3 className="text-[18px] sm:text-[20px] font-display font-bold mb-4 text-white opacity-50 tracking-wide">{title}</h3>
+        <div className="flex gap-3 sm:gap-6 overflow-x-hidden pb-4 pt-2 -mx-4 sm:-mx-10 px-4 sm:px-10">
            {[...Array(5)].map((_, i) => (
-             <div key={i} className={`shrink-0 bg-[#0B1020] animate-pulse rounded-[16px] ${cardStyle === 'trending' ? 'w-[150px] sm:w-[180px] aspect-[2/3]' : 'w-[280px] sm:w-[320px] aspect-[16/10]'}`} />
+             <div key={i} className={`shrink-0 bg-[#0B1020] animate-pulse rounded-[16px] ${cardStyle === 'trending' ? 'w-[130px] sm:w-[180px] aspect-[2/3]' : 'w-[160px] sm:w-[280px] aspect-[16/10]'}`} />
            ))}
         </div>
       </section>
@@ -103,9 +103,9 @@ export function ContentCarousel({ title, type, category, sortBy = 'recent', card
   if (data.length === 0) return null;
 
   return (
-    <section className="relative px-6 sm:px-10 pb-12 pt-6 group/section">
-      <div className="flex items-end justify-between mb-6">
-        <h3 className="text-[24px] font-display font-bold text-white tracking-wide">{title}</h3>
+    <section className="relative px-4 sm:px-10 pb-12 pt-6 group/section">
+      <div className="flex items-end justify-between mb-5 sm:mb-6">
+        <h3 className="text-[20px] sm:text-[24px] font-display font-bold text-white tracking-wide">{title}</h3>
         {seeAllHref && (
            <Link href={seeAllHref} className="text-[13px] font-bold text-[#A661FF] hover:text-[#7B2EFF] transition-colors uppercase tracking-widest flex items-center gap-1 group">
               Ver Todos
@@ -115,17 +115,17 @@ export function ContentCarousel({ title, type, category, sortBy = 'recent', card
       </div>
       
       <div className="relative border border-transparent">
-        {/* Floating buttons */}
+        {/* Floating buttons — hidden on mobile (touch scroll is enough) */}
         <button 
           onClick={scrollLeft}
-          className="absolute left-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:bg-[#8F44FF] hover:border-[#8F44FF] hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+          className="hidden sm:flex absolute left-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:bg-[#8F44FF] hover:border-[#8F44FF] hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
         >
           <ChevronLeft className="size-6 ml-[-2px]" />
         </button>
         
         <button 
           onClick={scrollRight}
-          className="absolute right-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:bg-[#8F44FF] hover:border-[#8F44FF] hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+          className="hidden sm:flex absolute right-[-24px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/10 items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 transition-all duration-300 text-white hover:bg-[#8F44FF] hover:border-[#8F44FF] hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
         >
           <ChevronRight className="size-6 mr-[-2px]" />
         </button>
@@ -133,11 +133,11 @@ export function ContentCarousel({ title, type, category, sortBy = 'recent', card
         {/* Scrollable Container */}
         <div 
           ref={scrollRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto pb-8 pt-2 scrollbar-hide snap-x -mx-6 sm:-mx-10 px-6 sm:px-10"
-          style={{ scrollBehavior: 'smooth' }}
+          className="flex gap-3 sm:gap-6 overflow-x-auto pb-8 pt-2 scrollbar-hide -mx-4 sm:-mx-10 px-4 sm:px-10 snap-x snap-mandatory"
+          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
         >
           {data.map((item) => (
-            <div key={item.slug} className="snap-start shrink-0">
+            <div key={item.slug} className="shrink-0 snap-start">
               {cardStyle === 'trending' ? (
                 <TrendingCard 
                   title={item.title} 

@@ -12,7 +12,9 @@ export async function fetchFromTmdb(endpoint: string, params: Record<string, str
     const key = process.env.TMDB_API_KEY || "e977149fcbba55f76536674e77f0a186";
     const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
     url.searchParams.append('api_key', key);
-    url.searchParams.append('language', 'pt-BR');
+    if (!endpoint.endsWith('/images')) {
+      url.searchParams.append('language', 'pt-BR');
+    }
     Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
 
     try {
@@ -240,6 +242,28 @@ export async function fetchLogo(id: number | string, type: 'movie' | 'tv' = 'mov
   }
 }
 
+export async function fetchAlternativeBackdrop(id: number | string, type: 'movie' | 'tv' = 'movie', defaultBackdropPath: string | null) {
+  try {
+    const data = await fetchFromTmdb(`/${type}/${id}/images`, { include_image_language: 'en,pt,null' }, true);
+    if (data && data.backdrops && data.backdrops.length > 0) {
+      const defaultFileName = defaultBackdropPath ? defaultBackdropPath.split('/').pop() : null;
+      // Filtra backdrops que sejam diferentes do padrão
+      const candidates = data.backdrops.filter((b: any) => defaultFileName ? !b.file_path.includes(defaultFileName) : true);
+      
+      if (candidates.length > 0) {
+        // Retorna a melhor candidata alternativa
+        return getTmdbImage(candidates[0].file_path, 'w780');
+      }
+      
+      // Se tiver apenas 1 backdrop ou nenhum alternativo
+      return getTmdbImage(data.backdrops[0].file_path, 'w780');
+    }
+    return defaultBackdropPath ? getTmdbImage(defaultBackdropPath, 'w780') : null;
+  } catch (e) {
+    return defaultBackdropPath ? getTmdbImage(defaultBackdropPath, 'w780') : null;
+  }
+}
+
 export function formatTmdbToCard(item: any) {
   const cType = item.media_type || (item.name ? 'tv' : 'movie');
   const isAnime = cType === 'tv' && item.original_language === 'ja' && (item.genre_ids || []).includes(16);
@@ -254,9 +278,9 @@ export function formatTmdbToCard(item: any) {
     title: item.title || item.name,
     subtitle: typeLabel,
     isAnime,
-    imageUrl: getTmdbImage(item.poster_path, 'w500') || getTmdbImage(item.backdrop_path, 'w500') || 'https://picsum.photos/seed/1/400/600',
-    backdropUrl: getTmdbImage(item.backdrop_path, 'w780') || getTmdbImage(item.poster_path, 'w500') || 'https://picsum.photos/seed/1/800/450',
-    posterUrl: getTmdbImage(item.poster_path, 'w500') || getTmdbImage(item.backdrop_path, 'w500') || 'https://picsum.photos/seed/1/400/600',
+    imageUrl: getTmdbImage(item.poster_path, 'w185') || getTmdbImage(item.backdrop_path, 'w185') || 'https://picsum.photos/seed/1/400/600',
+    backdropUrl: getTmdbImage(item.backdrop_path, 'w300') || getTmdbImage(item.poster_path, 'w185') || 'https://picsum.photos/seed/1/800/450',
+    posterUrl: getTmdbImage(item.poster_path, 'w185') || getTmdbImage(item.backdrop_path, 'w185') || 'https://picsum.photos/seed/1/400/600',
     slug: slug,
     overview: item.overview,
     date: item.release_date || item.first_air_date,

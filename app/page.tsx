@@ -4,6 +4,9 @@ import { HeroBanner } from '@/components/HeroBanner';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { siteConfig } from '@/config/site';
 import { TmdbCarousel } from '@/components/TmdbCarousel';
+import { PersonalizedRecommendations } from '@/components/PersonalizedRecommendations';
+import { NativeAd } from '@/components/NativeAd';
+import { SupportBanner } from '@/components/SupportBanner';
 
 export default function Home() {
   return (
@@ -46,8 +49,9 @@ export default function Home() {
             )}
           </div>
           
-          <div className="relative z-30 mt-[-20px] sm:mt-[-40px] md:mt-[-80px]">
+          <div className="relative z-30 mt-[-20px] sm:mt-[-40px] md:mt-[-80px] space-y-6">
             <ContinueWatching />
+            <PersonalizedRecommendations />
           </div>
 
           <div className="mt-8 space-y-8 relative z-10 pb-16">
@@ -71,6 +75,13 @@ export default function Home() {
                 )}
                 {/* 6. Filmes Populares */}
                 <TmdbCarousel title="Filmes Mais Assistidos" endpoint="popular_movies" cardStyle="media" seeAllHref="/search?type=movie&sort=popular" />
+                
+                {/* Banner Patrocinado Premium Nativo */}
+                <NativeAd placement="home-banner" className="px-4 md:px-8" />
+                
+                {/* Banner de Apoio da Comunidade Sem Ads */}
+                <SupportBanner className="px-4 md:px-8" />
+                
                 {/* 7. Próximos Lançamentos */}
                 <TmdbCarousel title="Chegando em Breve" endpoint="upcoming_movies" cardStyle="media" seeAllHref="/search?type=movie&sort=upcoming" badge="EM BREVE" />
                 {/* 8. Episódios Novos */}

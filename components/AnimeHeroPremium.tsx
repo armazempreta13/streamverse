@@ -87,7 +87,7 @@ export function AnimeHeroPremium() {
           >
             <div className="absolute inset-0 w-full h-full overflow-hidden rounded-[inherit]">
               <Image
-                src={`https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}`}
+                src={`https://image.tmdb.org/t/p/w780${item.backdrop_path || item.poster_path}`}
                 alt={item.name || item.title || ''}
                 fill
                 quality={80}

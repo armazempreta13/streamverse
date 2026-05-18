@@ -25,12 +25,18 @@ const AMBIENT_STYLES = `
 
 export function GlobalAmbilight() {
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const interactiveLightRef = useRef<HTMLDivElement>(null);
   const parallaxRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
+    // Mobile devices: no mouse interaction, disable entirely to save CPU/battery
+    if (window.innerWidth < 768 || 'ontouchstart' in window) {
+      setIsMobile(true);
+      return;
+    }
 
     let animationFrameId: number;
     let targetX = window.innerWidth / 2;
@@ -71,7 +77,7 @@ export function GlobalAmbilight() {
     };
   }, []);
 
-  if (!siteConfig.features.globalAmbilight || !mounted) return null;
+  if (!siteConfig.features.globalAmbilight || !mounted || isMobile) return null;
 
   // Gerar partículas de poeira cinematográfica de forma estática no mount
   // para evitar warnings de hidratação e garantir que são fixas.

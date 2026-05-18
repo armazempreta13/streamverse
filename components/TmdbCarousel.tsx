@@ -61,9 +61,9 @@ function formatItem(item: any, index: number) {
     title: item.title || '',
     subtitle: item.originalLanguage === 'ja' ? 'Anime' : type === 'movie' ? 'Filme' : 'Série',
     isAnime: item.originalLanguage === 'ja',
-    imageUrl: getTmdbImage(item.posterPath, 'w500') || getTmdbImage(item.backdropPath, 'w500') || 'https://picsum.photos/seed/1/400/600',
-    backdropUrl: getTmdbImage(item.backdropPath, 'w780') || getTmdbImage(item.posterPath, 'w500') || 'https://picsum.photos/seed/1/800/450',
-    posterUrl: getTmdbImage(item.posterPath, 'w500') || getTmdbImage(item.backdropPath, 'w500') || 'https://picsum.photos/seed/1/400/600',
+    imageUrl: getTmdbImage(item.posterPath, 'w185') || getTmdbImage(item.backdropPath, 'w185') || 'https://picsum.photos/seed/1/400/600',
+    backdropUrl: getTmdbImage(item.backdropPath, 'w300') || getTmdbImage(item.posterPath, 'w185') || 'https://picsum.photos/seed/1/800/450',
+    posterUrl: getTmdbImage(item.posterPath, 'w185') || getTmdbImage(item.backdropPath, 'w185') || 'https://picsum.photos/seed/1/400/600',
     slug: item.title || '',
     rank: index + 1,
   };
@@ -188,11 +188,11 @@ export const TmdbCarousel = React.memo(function TmdbCarousel({ title, endpoint, 
 
         <div 
           ref={scrollRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 pt-2 scrollbar-hide snap-x -mx-6 sm:-mx-10 px-6 sm:px-10"
-          style={{ scrollBehavior: 'smooth' }}
+          className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 pt-2 scrollbar-hide -mx-6 sm:-mx-10 px-6 sm:px-10 snap-x snap-mandatory"
+          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
         >
           {data.map((item) => (
-            <div key={item.id} className="snap-start shrink-0 cursor-pointer">
+            <div key={item.id} className="shrink-0 cursor-pointer snap-start">
                 {cardStyle === 'trending' ? (
                   <TrendingCard 
                     title={item.title} 

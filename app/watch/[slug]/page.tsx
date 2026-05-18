@@ -14,6 +14,8 @@ import { db } from '@/lib/firebase';
 import { useWatchProgress } from '@/hooks/useWatchProgress';
 import { CommentSection } from '@/components/CommentSection';
 import { OtakuAtmosphere } from '@/components/OtakuAtmosphere';
+import { GenreAtmosphere } from '@/components/GenreAtmosphere';
+import { SpidermanAnimation } from '@/components/SpidermanAnimation';
 
 // ─── Episode Card ────────────────────────────────────────────────────────────
 
@@ -258,6 +260,17 @@ function PlayerContent({ slug }: { slug: string }) {
     setAutoPlayCanceled(false);
   }, [playerParam, slug]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__streamverse_video_playing = hasClickedPlay;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        (window as any).__streamverse_video_playing = false;
+      }
+    };
+  }, [hasClickedPlay]);
+
   // ── Auto-advance ──────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -326,6 +339,23 @@ function PlayerContent({ slug }: { slug: string }) {
               );
           }
           setContent(fetched);
+
+          // Record favorite genres in LocalStorage
+          if (data.categories) {
+            try {
+              const cats = Array.isArray(data.categories) 
+                ? data.categories 
+                : (typeof data.categories === 'string' ? data.categories.split(',').map((c: any) => c.trim()) : []);
+              
+              const savedGenres = JSON.parse(localStorage.getItem('streamverse_genre_clicks') || '{}');
+              cats.forEach((genre: string) => {
+                if (genre) {
+                  savedGenres[genre] = (savedGenres[genre] || 0) + 1;
+                }
+              });
+              localStorage.setItem('streamverse_genre_clicks', JSON.stringify(savedGenres));
+            } catch (e) {}
+          }
         }
       } catch (e) {
         console.error(e);
@@ -379,10 +409,19 @@ function PlayerContent({ slug }: { slug: string }) {
     (e: any) => (e.season || 1) === seasonNum
   ) ?? [];
 
+  const genresList = useMemo(() => {
+    if (!content?.categories) return [];
+    return Array.isArray(content.categories)
+      ? content.categories
+      : (typeof content.categories === 'string' ? content.categories.split(',').map((c: any) => c.trim()) : []);
+  }, [content]);
+
   // ── JSX ───────────────────────────────────────────────────────────────────
 
   return (
-    <main className="min-h-screen bg-[#060610] text-white font-sans overflow-x-hidden">
+    <main className="min-h-screen bg-[#060610] text-white font-sans overflow-x-hidden relative">
+      <GenreAtmosphere genres={genresList} theme={isAnimeContent ? 'anime' : 'default'} />
+      <SpidermanAnimation title={content.title || ''} slug={slug} />
       {isAnimeContent && <OtakuAtmosphere backdropUrl={content?.heroImage} />}
 
       {/* Hero ambient */}
@@ -397,7 +436,7 @@ function PlayerContent({ slug }: { slug: string }) {
         <div className="absolute inset-0 bg-gradient-to-b from-[#060610]/60 via-[#060610]/90 to-[#060610]" />
       </div>
 
-      <div className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
+      <div className="relative z-10 max-w-[1800px] mx-auto px-3 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-10 pb-28 md:pb-6 lg:pb-10">
 
         {/* ── Back link ── */}
         <Link
@@ -508,6 +547,7 @@ function PlayerContent({ slug }: { slug: string }) {
                       src={videoSrc}
                       allowFullScreen
                       className="w-full h-full border-0"
+                      style={{ height: '100%' }}
                     />
                   )
                 ) : (
@@ -525,23 +565,30 @@ function PlayerContent({ slug }: { slug: string }) {
                       className="object-cover opacity-50 group-hover/play:opacity-70 transition-all duration-700 group-hover/play:scale-[1.02]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div
-                      className="relative z-10 w-20 h-20 rounded-full border-2 border-white/20 backdrop-blur-md bg-white/10 flex items-center justify-center group-hover/play:scale-110 transition-all duration-400"
-                      style={{
-                        boxShadow: `0 0 0 0 ${accentShadow}`,
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = accent;
-                        (e.currentTarget as HTMLElement).style.borderColor = accent;
-                        (e.currentTarget as HTMLElement).style.boxShadow = `0 0 40px ${accentShadow}`;
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)';
-                        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.2)';
-                        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                      }}
-                    >
-                      <Play className="size-9 fill-white text-white ml-1" />
+
+                    {/* Elegant Media Info Overlay */}
+                    <div className="absolute top-6 left-6 z-30 select-none pointer-events-none text-left">
+                      <span className="text-[10px] font-black tracking-[0.25em] uppercase opacity-55 text-white/95">Você está assistindo</span>
+                      <h2 className="text-white text-lg sm:text-2xl font-black tracking-tight mt-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">{content.title}</h2>
+                    </div>
+
+                    {/* Stunning Glassmorphic Play Button with Elegant Glow & Micro-animations */}
+                    <div className="relative z-10 group/btn transition-all duration-500 ease-out">
+                      {/* Pulsing neon halo shadow that expands on hover */}
+                      <div 
+                        className="absolute inset-0 rounded-full blur-xl opacity-30 group-hover/play:opacity-90 group-hover/play:scale-110 transition-all duration-500 animate-pulse"
+                        style={{ backgroundColor: accent, boxShadow: `0 0 40px ${accentShadow}` }}
+                      />
+                      {/* Outer halo border */}
+                      <div className="absolute -inset-4 rounded-full border border-white/5 group-hover/play:border-white/10 group-hover/play:scale-105 transition-all duration-500 pointer-events-none" />
+                      
+                      {/* Main Circular Glass container */}
+                      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/[0.06] backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] group-hover/play:bg-white/[0.12] group-hover/play:border-white/40 transition-all duration-500">
+                        <Play 
+                          className="size-8 sm:size-10 fill-white text-white ml-1.5 transition-transform duration-500 ease-out group-hover/play:scale-110"
+                          style={{ filter: `drop-shadow(0 0 10px rgba(255,255,255,0.4))` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -706,7 +753,7 @@ function PlayerContent({ slug }: { slug: string }) {
           {/* ════════════════════ RIGHT COL — Episode sidebar ════════════════════ */}
           {!isMovie && content.episodes && (
             <div className={`w-full xl:w-[420px] shrink-0 transition-all duration-500 ${showSidebar ? 'block' : 'hidden xl:hidden'}`}>
-              <div className="bg-[#0c0c18] border border-white/[0.07] rounded-2xl overflow-hidden flex flex-col sticky top-8" style={{ height: 'calc(100vh - 5rem)', maxHeight: '900px' }}>
+              <div className="bg-[#0c0c18] border border-white/[0.07] rounded-2xl overflow-hidden flex flex-col xl:sticky xl:top-8" style={{ height: 'auto', maxHeight: '70vh', minHeight: '300px' }}>
 
                 {/* Header */}
                 <div className="px-6 pt-6 pb-4 border-b border-white/[0.06] flex flex-col gap-4">
@@ -775,13 +822,15 @@ function PlayerContent({ slug }: { slug: string }) {
           )}
         </div>
 
-        {/* Mobile: toggle sidebar button */}
         {!isMovie && content.episodes && (
           <button
             onClick={() => setShowSidebar(!showSidebar)}
-            className={`xl:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-full shadow-2xl text-sm font-black transition-all ${showSidebar ? 'text-white' : 'bg-white/10 text-white/70 border border-white/20'
+            className={`xl:hidden fixed right-4 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-full shadow-2xl text-sm font-black transition-all ${showSidebar ? 'text-white' : 'bg-white/10 text-white/70 border border-white/20'
               }`}
-            style={showSidebar ? { backgroundColor: accent, boxShadow: `0 8px 32px ${accentShadow}` } : {}}
+            style={{
+              bottom: 'calc(4.5rem + env(safe-area-inset-bottom))',
+              ...(showSidebar ? { backgroundColor: accent, boxShadow: `0 8px 32px ${accentShadow}` } : {})
+            }}
           >
             <ListVideo className="size-4" />
             {showSidebar ? 'Fechar' : 'Episódios'}
