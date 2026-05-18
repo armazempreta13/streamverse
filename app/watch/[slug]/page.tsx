@@ -122,6 +122,7 @@ function PlayerContent({ slug }: { slug: string }) {
   const [autoPlayCanceled, setAutoPlayCanceled] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [iframeLoading, setIframeLoading] = useState(false);
 
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const episodesContainerRef = useRef<HTMLDivElement>(null);
@@ -270,6 +271,17 @@ function PlayerContent({ slug }: { slug: string }) {
       }
     };
   }, [hasClickedPlay]);
+
+  useEffect(() => {
+    if (hasClickedPlay) {
+      setIframeLoading(true);
+      // Auto-clear loading state after 10 seconds to ensure the player is interactive
+      const timer = setTimeout(() => {
+        setIframeLoading(false);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [videoSrc, hasClickedPlay]);
 
   // ── Auto-advance ──────────────────────────────────────────────────────────
 
@@ -486,11 +498,7 @@ function PlayerContent({ slug }: { slug: string }) {
                 
                 {/* Players List with Overflow internally */}
                 <div 
-                  className={`flex flex-col gap-2 ${
-                    availablePlayers.length > 2 
-                      ? 'max-h-[140px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent' 
-                      : ''
-                  }`}
+                  className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2.5 lg:pb-0 scrollbar-thin max-w-full"
                 >
                   {availablePlayers.map((p) => {
                     const isActive = playerParam === p.id;
@@ -498,7 +506,7 @@ function PlayerContent({ slug }: { slug: string }) {
                       <button
                         key={p.id}
                         onClick={() => setPlayerParam(p.id)}
-                        className={`w-full lg:w-[260px] flex items-center justify-between px-4 py-3 rounded-xl transition-all border group ${
+                        className={`flex-shrink-0 w-[170px] lg:w-[260px] flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all border group ${
                           isActive
                             ? 'text-white border-transparent'
                             : 'bg-white/5 text-white/50 border-white/5 hover:bg-white/10 hover:text-white/80 hover:border-white/10'
@@ -534,22 +542,36 @@ function PlayerContent({ slug }: { slug: string }) {
                 }`}
             >
               {/* Video area */}
-              <div className={`relative bg-black ${isFullscreen ? 'h-screen' : 'aspect-video'}`}>
+              <div className={`relative bg-black ${isFullscreen ? 'h-screen' : 'aspect-[4/3] xs:aspect-[16/10] sm:aspect-video min-h-[280px] xs:min-h-[340px] sm:min-h-0'}`}>
                 {videoSrc && hasClickedPlay ? (
-                  isIframeHtml ? (
-                    <div
-                      className="w-full h-full [&_iframe]:w-full [&_iframe]:h-full"
-                      dangerouslySetInnerHTML={{ __html: videoSrc }}
-                    />
-                  ) : (
-                    <iframe
-                      key={`${videoSrc}-${epNum}`}  // <-- força reload ao trocar ep
-                      src={videoSrc}
-                      allowFullScreen
-                      className="w-full h-full border-0"
-                      style={{ height: '100%' }}
-                    />
-                  )
+                  <div className="w-full h-full relative">
+                    {iframeLoading && (
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#050510] gap-4">
+                        <div
+                          className="w-12 h-12 rounded-full border-[3px] border-t-transparent animate-spin"
+                          style={{ borderColor: `${accent} transparent ${accent} ${accent}` }}
+                        />
+                        <span className="text-[11px] font-bold text-white/50 tracking-widest uppercase animate-pulse">
+                          Carregando Servidor... 🚀
+                        </span>
+                      </div>
+                    )}
+                    {isIframeHtml ? (
+                      <div
+                        className="w-full h-full [&_iframe]:w-full [&_iframe]:h-full"
+                        dangerouslySetInnerHTML={{ __html: videoSrc }}
+                      />
+                    ) : (
+                      <iframe
+                        key={`${videoSrc}-${epNum}`}  // <-- força reload ao trocar ep
+                        src={videoSrc}
+                        allowFullScreen
+                        className="w-full h-full border-0"
+                        style={{ height: '100%' }}
+                        onLoad={() => setIframeLoading(false)}
+                      />
+                    )}
+                  </div>
                 ) : (
                   <div
                     className="absolute inset-0 flex items-center justify-center cursor-pointer group/play"
